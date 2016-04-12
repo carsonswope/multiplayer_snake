@@ -19,6 +19,7 @@ var server = app.listen(app.get('port'), function() {
   console.log('server on port ' + server.address().port);
 });
 
+socketio(server);
 // this sets up the game loop
 
 var loopInterval = setInterval(gameTick, 1000);

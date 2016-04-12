@@ -2,6 +2,6 @@
 
 module.exports = function() {
 
-  console.log('ha');
+  // console.log('ha');
 
 };

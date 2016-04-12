@@ -7,9 +7,14 @@ module.exports = initSockets;
 
 function initSockets(server, client){
 
+  console.log('starting to listen');
+
   var io = socketio.listen(server);
 
+  console.log(io);
+
   var users = io.of('/users').on('connection', function (socket) {
+
     var user;
 
     function serverError(err, message){
@@ -57,6 +62,7 @@ function initSockets(server, client){
     });
 
     socket.on('disconnect', function(){
+      console.log('disconnected');
       if(user !== undefined){
         socket.leave(user.area);
         repo.removeUser(user.username, user.area, client).done(null,
