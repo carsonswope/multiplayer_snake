@@ -11,7 +11,7 @@ function getVotes(area, client){
   return q.Promise(function(resolve, reject, notify){
 
     client.smembers(area+':votes', function(err, votes){
-      
+
       if(err)
         reject(err);
       if(votes.length > 0){
