@@ -1,5 +1,5 @@
 var config = {
-  REDISURL: getEnv('REDISURL'),
+  REDIS_URL: getEnv('REDIS_URL'),
   PORT: getEnv('PORT')
 };
 
