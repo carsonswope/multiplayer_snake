@@ -46,12 +46,14 @@
 
 	'use strict';
 
-	console.log('helo');
-	console.log('and_we_up');
-
 	document.addEventListener('DOMContentLoaded', function () {
 
-	  var s = io();
+	  window.s = io();
+	  //
+	  // s.emit('some event', {data: 'hah'} );
+	  s.on('event', function (data) {
+	    console.log(data);
+	  });
 	});
 
 /***/ }

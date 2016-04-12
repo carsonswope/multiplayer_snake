@@ -1,8 +1,8 @@
-var config = require('../config'),
-    redis = require('redis'),
-    url = require('url');
+// var config = require('../config'),
+var redis = require('redis');
+var url = require('url');
 
-var redisConfig = url.parse(config.REDIS_URL);
+var redisConfig = url.parse(process.env.REDIS_URL);
 var client = redis.createClient(redisConfig.port, redisConfig.hostname);
 
 if (redisConfig.auth !== null)

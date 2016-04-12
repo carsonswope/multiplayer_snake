@@ -1,25 +1,21 @@
 var io = require('socket.io');
 var express = require('express');
-
-var app = express()
-var server = require('http').createServer(app)
-var io = io.listen(server);
-
 var game = require('./backend/gameSimulation');
+var redisClient = require('./backend/redis');
 
+var app = express();
+
+var server = require('http').createServer(app);
+var iox = io(server);
 
 app.use(express.static(__dirname + '/assets'));
 app.get('/', function(req, res){ res.sendFile('index.html'); });
 
 server.listen(3000);
 
-
-
-io.sockets.on('connection', function(socket){
+iox.sockets.on('connection', function(socket){
 
   console.log('user connected');
-
-  console.log(socket);
 
   socket.on('some event', function(data){
     console.log(data);
@@ -32,5 +28,5 @@ io.sockets.on('connection', function(socket){
 
 })
 
-game.start();
-setTimeout(game.stop, 10000);
+game.start(redisClient, iox.sockets);
+setTimeout(game.stop, 100000);
