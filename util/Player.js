@@ -33,15 +33,25 @@ Player.prototype.changeDir = function(newDir){
   this.state = CONSTANTS.PLAYER_STATES.PLAYING;
 };
 
-// Player.prototype.tick = function(ateApple){
-//   var dPos = CONSTANTS.DIRS[this.dir];
-//   snake.unshift([
-//     this.snake[0] + dPos[0],
-//     this.snake[1] + dPos[1]
-//   ])
-//
-//   if (!ateApple) { this.snake.pop(); }
-//
-// };
+Player.prototype.nextPos = function(){
+  if (this.dir) {
+    var dPos = CONSTANTS.DIRS[this.dir];
+    return ([
+      this.snake[0][0] + dPos[0],
+      this.snake[0][1] + dPos[1]
+    ]);
+  } else {
+    return undefined;
+  }
+};
+
+Player.prototype.tick = function(ateApple){
+  if (this.nextPos()){
+    this.snake.unshift(this.nextPos());
+  }
+
+  // if (!ateApple) { this.snake.pop(); }
+
+};
 
 module.exports = Player;

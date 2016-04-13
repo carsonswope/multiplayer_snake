@@ -79,7 +79,6 @@ var Board = React.createClass({
       reqDir = CONSTANTS.KEYS[e.which];
       waitingReq = GameStore.moveRequest(nextFrame);
 
-
       if (!waitingReq &&
           this.ownPlayer().dir != reqDir &&
           this.ownPlayer().dir != CONSTANTS.OPPOSITE_DIRS[reqDir]) {
@@ -88,11 +87,12 @@ var Board = React.createClass({
         GameStore.setMoveRequest(nextFrame, reqDir);
         Actions.requestDirChange(nextFrame, reqDir);
 
-      } else if (!GameStore.moveRequest(nextFrame + 1) &&
+      } else if (waitingReq &&
+                 !GameStore.moveRequest(nextFrame + 1) &&
                  waitingReq != reqDir &&
                  waitingReq != CONSTANTS.OPPOSITE_DIRS[reqDir]){
         // there already is a move requested for the next frame
-        // but we can request one for the one after it
+        // but we are eligible to request one for the one after it
 
         GameStore.setMoveRequest(nextFrame + 1, reqDir);
 
@@ -156,8 +156,6 @@ var Board = React.createClass({
 
     var rows = [];
     var cellId, cellClass;
-
-    console.log(positions);
 
     for (var row = 0; row < CONSTANTS.BOARD.HEIGHT; row++) {
       for (var col = 0; col < CONSTANTS.BOARD.WIDTH; col++) {

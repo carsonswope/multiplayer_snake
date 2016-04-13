@@ -1,5 +1,7 @@
 var redis = require('redis');
 
+var Player = require('../util/Player');
+
 var _time = new Date();
 var _newTime, _dT, _dTAvg;
 var _dTList = [];
@@ -27,6 +29,21 @@ exports.tick = function() {
 };
 
 exports.advanceGameState = function(players) {
+
+  var currentPlayer;
+  if (players){
+    Object.keys(players).forEach(function(player){
+
+      currentPlayer = Player.fromJSON(players[player]);
+      //
+      currentPlayer.nextPos();
+      //
+      currentPlayer.tick();
+      //
+      _redisClient.hset('players', player, currentPlayer.json());
+
+    })
+  }
 
 };
 
