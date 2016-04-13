@@ -50,29 +50,26 @@
 
 	var Snake = __webpack_require__(2);
 	var React = __webpack_require__(3);
-	var ReactDOM = __webpack_require__(160);
-	var Actions = __webpack_require__(161);
+	var ReactDOM = __webpack_require__(162);
+	var Actions = __webpack_require__(163);
 
-	var GameStore = __webpack_require__(167);
+	var GameStore = __webpack_require__(168);
+
+	var socket = io();
+	Actions.setupClientSocketEvents(socket);
 
 	document.addEventListener('DOMContentLoaded', function () {
 
 	  ReactDOM.render(React.createElement(Snake, null), document.getElementById('snake-game'));
 	});
 
-	window.s = io();
-	//
-	// s.emit('some event', {data: 'hah'} );
-
-	s.on(CONSTANTS.ACTIONS.SERVER_TICK, function (data) {
-	  Actions.serverTick(data);
-	});
+	window.addEventListener('resize', Actions.resizeWindow);
 
 /***/ },
 /* 1 */
 /***/ function(module, exports) {
 
-	"use strict";
+	'use strict';
 
 	exports.MS_PER_TICK = 350;
 	exports.NUMBER_DTS_TO_STORE = 10;
@@ -97,9 +94,17 @@
 	  W: [0, -1]
 	};
 
+	exports.KEYS = {
+	  37: 'W', 38: 'N', 39: 'E', 40: 'S'
+	};
+
+	exports.OPPOSITES = {
+	  W: 'E', E: 'W', N: 'S', S: 'N'
+	};
+
 	exports.BOARD = {
 	  WIDTH: 50,
-	  HEIGHT: 50
+	  HEIGHT: 30
 	};
 
 	exports.ACTIONS = {
@@ -115,6 +120,9 @@
 
 	var React = __webpack_require__(3);
 
+	var Board = __webpack_require__(160);
+	var Header = __webpack_require__(161);
+
 	var Snake = React.createClass({
 	  displayName: 'Snake',
 
@@ -123,7 +131,8 @@
 	    return React.createElement(
 	      'div',
 	      null,
-	      ' dis da snake game '
+	      React.createElement(Header, null),
+	      React.createElement(Board, null)
 	    );
 	  }
 
@@ -19733,8 +19742,143 @@
 
 	'use strict';
 
-	module.exports = __webpack_require__(5);
+	var React = __webpack_require__(3);
+	var PropTypes = React.PropTypes;
 
+	var Actions = __webpack_require__(163);
+
+	var WindowStore = __webpack_require__(186);
+	var GameStore = __webpack_require__(168);
+
+	var Board = React.createClass({
+	  displayName: 'Board',
+
+
+	  getInitialState: function getInitialState() {
+	    return {
+	      size: WindowStore.size(),
+	      gameState: GameStore.currentState(),
+	      ownId: GameStore.ownId()
+	    };
+	  },
+
+	  componentDidMount: function componentDidMount() {
+	    this.windowListener = WindowStore.addListener(this.resizeWindow);
+	    this.gameListener = GameStore.addListener(this.gameUpdate);
+	    window.addEventListener('keydown', this.handleKey);
+	  },
+
+	  componentWillUnmount: function componentWillUnmount() {
+	    this.windowListener.remove();
+	    this.gameListener.remove();
+	    window.removeEventListener('keydown', this.handleKey);
+	  },
+
+	  resizeWindow: function resizeWindow() {
+	    this.setState({
+	      size: WindowStore.size()
+	    });
+	  },
+
+	  gameUpdate: function gameUpdate() {
+	    this.setState({
+	      gameState: GameStore.currentState(),
+	      ownId: GameStore.ownId()
+	    });
+	  },
+
+	  ownPlayer: function ownPlayer() {
+	    if (this.state.gameState) {
+	      return this.state.gameState.players[this.state.ownId];
+	    }
+	  },
+
+	  ownState: function ownState() {
+	    if (this.ownPlayer()) {
+	      return this.ownPlayer().state;
+	    }
+	  },
+
+	  handleClick: function handleClick(e) {
+	    if (this.ownState() == CONSTANTS.PLAYER_STATES.DEAD) {
+	      var requestedSpawnLocation = e.target.id.split(',').map(function (coord) {
+	        return parseInt(coord);
+	      });
+	      Actions.requestSpawnLocation(requestedSpawnLocation);
+	    }
+	  },
+
+	  handleKey: function handleKey(e) {
+
+	    if ((this.ownState() == CONSTANTS.PLAYER_STATES.PLACED || this.ownState() == CONSTANTS.PLAYER_STATES.PLAYING) && CONSTANTS.KEYS[e.which]) {
+
+	      console.log(e.which);
+	    }
+	  },
+
+	  boardDims: function boardDims() {
+	    CONSTANTS.BOARD.WIDTH;
+	    CONSTANTS.BOARD.HEIGHT;
+	    var height = this.state.size.height - (70 + CONSTANTS.BOARD.HEIGHT * 2);
+	    var width = this.state.size.width - (20 + CONSTANTS.BOARD.WIDTH * 2);
+
+	    return { height: height, width: width };
+	  },
+
+	  squareSize: function squareSize() {
+
+	    var dims = this.boardDims();
+	    var squareSize;
+
+	    if (dims.height / dims.width > CONSTANTS.BOARD.HEIGHT / CONSTANTS.BOARD.WIDTH) {
+	      squareSize = dims.width / CONSTANTS.BOARD.WIDTH;
+	    } else {
+	      squareSize = dims.height / CONSTANTS.BOARD.HEIGHT;
+	    }
+
+	    return squareSize;
+	  },
+
+	  cells: function cells() {
+
+	    var rows = [];
+	    var cells;
+	    var row;
+	    var id;
+	    var squareSize = this.squareSize();
+
+	    for (var row = 0; row < CONSTANTS.BOARD.HEIGHT; row++) {
+	      for (var col = 0; col < CONSTANTS.BOARD.WIDTH; col++) {
+	        id = '' + row + ',' + col;
+
+	        rows.push(React.createElement('div', { id: id,
+	          className: 'cell',
+	          key: id,
+	          style: {
+	            width: squareSize,
+	            height: squareSize
+	          } }));
+	      }
+	    }
+
+	    return rows;
+	  },
+
+	  render: function render() {
+	    return React.createElement(
+	      'div',
+	      { id: 'board-main',
+	        onClick: this.handleClick,
+	        style: {
+	          width: (this.squareSize() + 2) * CONSTANTS.BOARD.WIDTH + 2
+	        } },
+	      this.cells()
+	    );
+	  }
+
+	});
+
+	module.exports = Board;
 
 /***/ },
 /* 161 */
@@ -19742,14 +19886,102 @@
 
 	'use strict';
 
-	var Dispatcher = __webpack_require__(166);
+	var React = __webpack_require__(3);
+	var PropTypes = React.PropTypes;
 
-	exports.serverTick = function (data) {
-	  Dispatcher.dispatch({
-	    actionType: CONSTANTS.ACTIONS.SERVER_TICK,
-	    gameState: data
-	  });
-	};
+	var GameStore = __webpack_require__(168);
+
+	var Header = React.createClass({
+	  displayName: 'Header',
+
+
+	  getInitialState: function getInitialState() {
+	    return {
+	      gameState: GameStore.currentState(),
+	      ownId: GameStore.ownId()
+	    };
+	  },
+
+	  componentDidMount: function componentDidMount() {
+	    this.gameListener = GameStore.addListener(this.gameUpdate);
+	  },
+
+	  componentWillUnmount: function componentWillUnmount() {
+	    this.gameListener.remove();
+	  },
+
+	  gameUpdate: function gameUpdate() {
+	    this.setState({
+	      gameState: GameStore.currentState(),
+	      ownId: GameStore.ownId()
+	    });
+	  },
+
+	  ownPlayer: function ownPlayer() {
+	    if (this.state.gameState) {
+	      return this.state.gameState.players[this.state.ownId];
+	    }
+	  },
+
+	  ownState: function ownState() {
+	    if (this.ownPlayer()) {
+	      return this.ownPlayer().state;
+	    }
+	  },
+
+	  message: function message() {
+
+	    switch (this.ownState()) {
+	      case undefined:
+	        return 'connecting..';
+	      case CONSTANTS.PLAYER_STATES.DEAD:
+	        return 'click on board to spawn';
+	      case CONSTANTS.PLAYER_STATES.PLACED:
+	        return 'arrow key to start moving';
+	      case CONSTANTS.PLAYER_STATES.PLAYING:
+	        return 'current length: ' + this.state.gameState.players[this.state.ownId].snake.length;
+	    }
+	  },
+
+	  render: function render() {
+	    return React.createElement(
+	      'div',
+	      { id: 'header-main' },
+	      React.createElement(
+	        'div',
+	        { id: 'header-title' },
+	        'Multiplayer Snake!'
+	      ),
+	      React.createElement(
+	        'div',
+	        { id: 'header-message' },
+	        this.message()
+	      )
+	    );
+	  }
+
+	});
+
+	module.exports = Header;
+
+/***/ },
+/* 162 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	module.exports = __webpack_require__(5);
+
+
+/***/ },
+/* 163 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var Dispatcher = __webpack_require__(164);
+
+	var _socket;
 
 	exports.updateScreen = function () {
 	  Dispatcher.dispatch({
@@ -19757,9 +19989,44 @@
 	  });
 	};
 
+	exports.setupClientSocketEvents = function (socket) {
+
+	  _socket = socket;
+
+	  socket.on(CONSTANTS.ACTIONS.SERVER_TICK, function (data) {
+	    Dispatcher.dispatch({
+	      actionType: CONSTANTS.ACTIONS.SERVER_TICK,
+	      serverGameState: data,
+	      ownId: socket.id
+	    });
+	  });
+	};
+
+	exports.resizeWindow = function () {
+	  Dispatcher.dispatch({
+	    actionType: CONSTANTS.ACTIONS.RESIZE_WINDOW,
+	    size: {
+	      width: innerWidth,
+	      height: innerHeight
+	    }
+	  });
+	};
+
+	exports.requestSpawnLocation = function (requestedLocation) {
+	  _socket.emit(CONSTANTS.PLAYER_MOVES.SET_STARTING_POS, requestedLocation);
+	};
+
 /***/ },
-/* 162 */,
-/* 163 */
+/* 164 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var Dispatcher = __webpack_require__(165).Dispatcher;
+	module.exports = new Dispatcher();
+
+/***/ },
+/* 165 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -19771,11 +20038,11 @@
 	 * of patent rights can be found in the PATENTS file in the same directory.
 	 */
 
-	module.exports.Dispatcher = __webpack_require__(164);
+	module.exports.Dispatcher = __webpack_require__(166);
 
 
 /***/ },
-/* 164 */
+/* 166 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -19797,7 +20064,7 @@
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-	var invariant = __webpack_require__(165);
+	var invariant = __webpack_require__(167);
 
 	var _prefix = 'ID_';
 
@@ -20012,7 +20279,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6)))
 
 /***/ },
-/* 165 */
+/* 167 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -20067,95 +20334,124 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6)))
 
 /***/ },
-/* 166 */
+/* 168 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var Dispatcher = __webpack_require__(163).Dispatcher;
-	module.exports = new Dispatcher();
+	var Dispatcher = __webpack_require__(164);
+	var Store = __webpack_require__(169).Store;
 
-/***/ },
-/* 167 */
-/***/ function(module, exports, __webpack_require__) {
+	var Player = __webpack_require__(187);
 
-	'use strict';
-
-	var Dispatcher = __webpack_require__(166);
-	var Store = __webpack_require__(168).Store;
-
-	var Actions = __webpack_require__(161);
+	var Actions = __webpack_require__(163);
 
 	var _lastServerTick, _updating;
 	var _time, _newTime, _dT, _dTAvg;
 	var _dTList = [];
 	var _dTSum = 0;
 	var _currentFrame;
+	var _currentState;
+
+	var _playerId;
 	// var _lastServerTickFrame;
 
 	var GameStore = new Store(Dispatcher);
 
+	GameStore.__onDispatch = function (payload) {
+	  switch (payload.actionType) {
+	    case CONSTANTS.ACTIONS.SERVER_TICK:
+	      GameStore.receiveServerTick(payload.serverGameState, payload.ownId);
+	      break;
+	    case CONSTANTS.ACTIONS.UPDATE_SCREEN:
+	      GameStore.updateScreen();
+	      break;
+	  }
+	};
+
 	GameStore.currentFrame = function () {
 	  return _currentFrame;
 	};
+	GameStore.currentState = function () {
+	  return _currentState;
+	};
+	GameStore.ownId = function () {
+	  return _playerId;
+	};
 
-	GameStore.receiveServerTick = function (gameState) {
+	GameStore.receiveServerTick = function (serverGameState, ownId) {
 
-	  _lastServerTick = gameState;
+	  if (!_playerId) {
+	    _playerId = ownId;
+	  }
 
-	  if (gameState.frameNumber > _currentFrame || (_currentFrame + 1) % CONSTANTS.NUM_FRAMES == gameState.frameNumber) {
+	  if (serverGameState.frameNumber > _currentFrame) {
 	    // if we are receiving data from the server about a frame
 	    // that we will show shortly, just copy the data from the server
 	    // into our game state store
-	    console.log('goood');
-	  } else if (gameState.frameNumber == _currentFrame) {
-	    // otherwise, we had to predict what the board will look like
-	    // because this frame hadn't arrived yet - we may need to
-	    // update the screen immediately to fix discrepencies between
-	    // our predictions and the state of the board
-	    console.log('baaad');
-	  } else {
-	    // hmm... old data. discard?
+	    // console.log('goood');
 
-	  }
+	  } else if (serverGameState.frameNumber == _currentFrame) {
+	      // otherwise, we had to predict what the board will look like
+	      // because this frame hadn't arrived yet - we may need to
+	      // update the screen immediately to fix discrepencies between
+	      // our predictions and the state of the board
+	      // console.log('baaad')
+	    } else if (_lastServerTick && serverGameState.frameNumber > _lastServerTick.frameNumber) {
+	        // old data but still newer than the last tick received from the server
 
-	  _lastServerTick = gameState;
+	      }
+
+	  _lastServerTick = serverGameState;
 	  _lastServerTick.arrivalTime = new Date();
+
+	  GameStore.parseLastServerTick();
 	  GameStore.updateTimeStore();
 
+	  // see if we have to start our loop of updating
+	  // the actual screen
 	  if (!_updating && _dTList.length == CONSTANTS.NUMBER_DTS_TO_STORE) {
 
 	    // make first setTimeout call, calling updateScreen
 	    // which sets the update loop in motion
 	    _updating = true;
 
-	    // first frame that gets rendered is actually the next one
+	    // first frame that gets rendered actually ends up
+	    // being the next one
 	    _currentFrame = _lastServerTick.frameNumber;
 
+	    // timeline: top = server tick arrivals, bottom = screen updates
+	    // |-----|-----|-----|-----|--->
+	    //        |-----|-----|-----|-->
 	    var timeToNextUpdate = _dTAvg + CONSTANTS.MS_AFTER_EXPECTED_SERVER_UPDATE_ARRIVAL_TO_UPDATE_SCREEN;
 	    setTimeout(Actions.updateScreen, timeToNextUpdate);
 	  };
 	};
 
+	GameStore.parseLastServerTick = function () {
+
+	  Object.keys(_lastServerTick.players).forEach(function (id) {
+	    _lastServerTick.players[id] = Player.fromJSON(_lastServerTick.players[id]);
+	  });
+	};
+
 	GameStore.updateScreen = function () {
 
-	  console.log('update');
 	  _currentFrame += 1;
-	  _currentFrame = _currentFrame % CONSTANTS.NUM_FRAMES;
 	  GameStore.setNewTimeout();
-
-	  // debugger
 
 	  if (_currentFrame == _lastServerTick.frameNumber) {
 
-	    console.log('server data arrived in time');
-	    console.log('current: ' + _currentFrame);
+	    _currentState = _lastServerTick;
+
+	    // console.log('on time');
 	  } else {
 
-	    console.log('server data arrived late');
-	    console.log('current showing frame: ' + _currentFrame);
-	    console.log('last server arrived  : ' + _lastServerTick.frameNumber);
-	  }
+	      // console.log('server data arrived late');
+	      // console.log('current showing frame: ' + _currentFrame);
+	      // console.log('last server arrived  : ' + _lastServerTick.frameNumber);
+
+	    }
 
 	  GameStore.__emitChange();
 	};
@@ -20163,16 +20459,12 @@
 	GameStore.setNewTimeout = function () {
 
 	  // figure out what frame number we are currently scheduling
-	  var nextFrameNumber = (_currentFrame + 1) % CONSTANTS.NUM_FRAMES;
+	  var nextFrameNumber = _currentFrame + 1;
 
-	  // im sure theres some easy discrete math solution to this problem
 	  // how many frames past the most recently arrived server tick
 	  // we are scheduling. optimally this will be 1, sometimes 2 if
-	  // the last tick is slightly delayed
-	  var i = 0;
-	  while ((_lastServerTick.frameNumber + i) % CONSTANTS.NUM_FRAMES != nextFrameNumber) {
-	    i += 1;
-	  }
+	  // the arrival of the last tick has been slightly delayed
+	  var i = nextFrameNumber - _lastServerTick.frameNumber;
 
 	  // expected arrival time of that frame from the server,
 	  // plus buffer
@@ -20203,21 +20495,10 @@
 	  }
 	};
 
-	GameStore.__onDispatch = function (payload) {
-	  switch (payload.actionType) {
-	    case CONSTANTS.ACTIONS.SERVER_TICK:
-	      GameStore.receiveServerTick(payload.gameState);
-	      break;
-	    case CONSTANTS.ACTIONS.UPDATE_SCREEN:
-	      GameStore.updateScreen();
-	      break;
-	  }
-	};
-
 	module.exports = GameStore;
 
 /***/ },
-/* 168 */
+/* 169 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -20229,15 +20510,15 @@
 	 * of patent rights can be found in the PATENTS file in the same directory.
 	 */
 
-	module.exports.Container = __webpack_require__(169);
-	module.exports.MapStore = __webpack_require__(172);
-	module.exports.Mixin = __webpack_require__(184);
-	module.exports.ReduceStore = __webpack_require__(173);
-	module.exports.Store = __webpack_require__(174);
+	module.exports.Container = __webpack_require__(170);
+	module.exports.MapStore = __webpack_require__(173);
+	module.exports.Mixin = __webpack_require__(185);
+	module.exports.ReduceStore = __webpack_require__(174);
+	module.exports.Store = __webpack_require__(175);
 
 
 /***/ },
-/* 169 */
+/* 170 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -20259,10 +20540,10 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var FluxStoreGroup = __webpack_require__(170);
+	var FluxStoreGroup = __webpack_require__(171);
 
-	var invariant = __webpack_require__(165);
-	var shallowEqual = __webpack_require__(171);
+	var invariant = __webpack_require__(167);
+	var shallowEqual = __webpack_require__(172);
 
 	var DEFAULT_OPTIONS = {
 	  pure: true,
@@ -20420,7 +20701,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6)))
 
 /***/ },
-/* 170 */
+/* 171 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -20439,7 +20720,7 @@
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-	var invariant = __webpack_require__(165);
+	var invariant = __webpack_require__(167);
 
 	/**
 	 * FluxStoreGroup allows you to execute a callback on every dispatch after
@@ -20501,7 +20782,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6)))
 
 /***/ },
-/* 171 */
+/* 172 */
 /***/ function(module, exports) {
 
 	/**
@@ -20556,7 +20837,7 @@
 	module.exports = shallowEqual;
 
 /***/ },
-/* 172 */
+/* 173 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -20577,10 +20858,10 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var FluxReduceStore = __webpack_require__(173);
-	var Immutable = __webpack_require__(183);
+	var FluxReduceStore = __webpack_require__(174);
+	var Immutable = __webpack_require__(184);
 
-	var invariant = __webpack_require__(165);
+	var invariant = __webpack_require__(167);
 
 	/**
 	 * This is a simple store. It allows caching key value pairs. An implementation
@@ -20706,7 +20987,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6)))
 
 /***/ },
-/* 173 */
+/* 174 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -20727,10 +21008,10 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var FluxStore = __webpack_require__(174);
+	var FluxStore = __webpack_require__(175);
 
-	var abstractMethod = __webpack_require__(182);
-	var invariant = __webpack_require__(165);
+	var abstractMethod = __webpack_require__(183);
+	var invariant = __webpack_require__(167);
 
 	var FluxReduceStore = (function (_FluxStore) {
 	  _inherits(FluxReduceStore, _FluxStore);
@@ -20813,7 +21094,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6)))
 
 /***/ },
-/* 174 */
+/* 175 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -20832,11 +21113,11 @@
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-	var _require = __webpack_require__(175);
+	var _require = __webpack_require__(176);
 
 	var EventEmitter = _require.EventEmitter;
 
-	var invariant = __webpack_require__(165);
+	var invariant = __webpack_require__(167);
 
 	/**
 	 * This class should be extended by the stores in your application, like so:
@@ -20996,7 +21277,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6)))
 
 /***/ },
-/* 175 */
+/* 176 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -21009,14 +21290,14 @@
 	 */
 
 	var fbemitter = {
-	  EventEmitter: __webpack_require__(176)
+	  EventEmitter: __webpack_require__(177)
 	};
 
 	module.exports = fbemitter;
 
 
 /***/ },
-/* 176 */
+/* 177 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -21035,11 +21316,11 @@
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-	var EmitterSubscription = __webpack_require__(177);
-	var EventSubscriptionVendor = __webpack_require__(179);
+	var EmitterSubscription = __webpack_require__(178);
+	var EventSubscriptionVendor = __webpack_require__(180);
 
-	var emptyFunction = __webpack_require__(181);
-	var invariant = __webpack_require__(180);
+	var emptyFunction = __webpack_require__(182);
+	var invariant = __webpack_require__(181);
 
 	/**
 	 * @class BaseEventEmitter
@@ -21213,7 +21494,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6)))
 
 /***/ },
-/* 177 */
+/* 178 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -21234,7 +21515,7 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var EventSubscription = __webpack_require__(178);
+	var EventSubscription = __webpack_require__(179);
 
 	/**
 	 * EmitterSubscription represents a subscription with listener and context data.
@@ -21266,7 +21547,7 @@
 	module.exports = EmitterSubscription;
 
 /***/ },
-/* 178 */
+/* 179 */
 /***/ function(module, exports) {
 
 	/**
@@ -21320,7 +21601,7 @@
 	module.exports = EventSubscription;
 
 /***/ },
-/* 179 */
+/* 180 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -21339,7 +21620,7 @@
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-	var invariant = __webpack_require__(180);
+	var invariant = __webpack_require__(181);
 
 	/**
 	 * EventSubscriptionVendor stores a set of EventSubscriptions that are
@@ -21429,7 +21710,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6)))
 
 /***/ },
-/* 180 */
+/* 181 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -21484,7 +21765,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6)))
 
 /***/ },
-/* 181 */
+/* 182 */
 /***/ function(module, exports) {
 
 	/**
@@ -21526,7 +21807,7 @@
 	module.exports = emptyFunction;
 
 /***/ },
-/* 182 */
+/* 183 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -21543,7 +21824,7 @@
 
 	'use strict';
 
-	var invariant = __webpack_require__(165);
+	var invariant = __webpack_require__(167);
 
 	function abstractMethod(className, methodName) {
 	   true ? process.env.NODE_ENV !== 'production' ? invariant(false, 'Subclasses of %s must override %s() with their own implementation.', className, methodName) : invariant(false) : undefined;
@@ -21553,7 +21834,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6)))
 
 /***/ },
-/* 183 */
+/* 184 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -26540,7 +26821,7 @@
 	}));
 
 /***/ },
-/* 184 */
+/* 185 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -26557,9 +26838,9 @@
 
 	'use strict';
 
-	var FluxStoreGroup = __webpack_require__(170);
+	var FluxStoreGroup = __webpack_require__(171);
 
-	var invariant = __webpack_require__(165);
+	var invariant = __webpack_require__(167);
 
 	/**
 	 * `FluxContainer` should be preferred over this mixin, but it requires using
@@ -26661,6 +26942,94 @@
 
 	module.exports = FluxMixinLegacy;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6)))
+
+/***/ },
+/* 186 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var Dispatcher = __webpack_require__(164);
+	var Store = __webpack_require__(169).Store;
+
+	var _size = {
+	  width: innerWidth,
+	  height: innerHeight
+	};
+
+	var WindowStore = new Store(Dispatcher);
+
+	WindowStore.__onDispatch = function (payload) {
+	  switch (payload.actionType) {
+	    case CONSTANTS.ACTIONS.RESIZE_WINDOW:
+	      WindowStore.resizeWindow(payload.size);
+	      break;
+	  }
+	};
+
+	WindowStore.size = function () {
+	  return _size;
+	};
+
+	WindowStore.resizeWindow = function (size) {
+	  _size = size;
+	  WindowStore.__emitChange();
+	};
+
+	module.exports = WindowStore;
+
+/***/ },
+/* 187 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	function Player(options) {
+	  this.id = options.id || id;
+	  this.name = options.name || undefined;
+	  this.snake = options.snake || [];
+	  this.state = options.state || CONSTANTS.PLAYER_STATES.DEAD;
+	  this.dir = options.dir || undefined;
+	};
+
+	Player.fromJSON = function (json) {
+	  return new Player(JSON.parse(json));
+	};
+
+	Player.prototype.json = function () {
+	  return JSON.stringify(this);
+	};
+
+	Player.prototype.canPlace = function () {
+	  return this.state === CONSTANTS.PLAYER_STATES.DEAD;
+	};
+
+	Player.prototype.place = function (newPos) {
+	  this.snake = [newPos];
+	  this.state = CONSTANTS.PLAYER_STATES.PLACED;
+	};
+
+	Player.prototype.canChangeDir = function () {
+	  return this.state !== CONSTANTS.PLAYER_STATES.DEAD;
+	};
+
+	Player.prototype.changeDir = function (newDir) {
+	  this.dir = newDir;
+	  this.state = CONSTANTS.PLAYER_STATES.PLAYING;
+	};
+
+	// Player.prototype.tick = function(ateApple){
+	//   var dPos = CONSTANTS.DIRS[this.dir];
+	//   snake.unshift([
+	//     this.snake[0] + dPos[0],
+	//     this.snake[1] + dPos[1]
+	//   ])
+	//
+	//   if (!ateApple) { this.snake.pop(); }
+	//
+	// };
+
+	module.exports = Player;
 
 /***/ }
 /******/ ]);

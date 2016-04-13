@@ -6,22 +6,27 @@ var _dTList = [];
 var _dTSum = 0;
 var _interval;
 var _frameNumber = 0;
-var _redisClient;
-var _io;
+var _redisClient, _io;
 
 exports.tick = function() {
 
   updateTime();
 
-  _redisClient.hgetall('players', function(err, users){
-    _io.emit(CONSTANTS.ACTIONS.SERVER_TICK,
-      {
-        users: users,
-        frameNumber: _frameNumber,
-        avgTickTime: _dTAvg
-      }
-    );
+  _redisClient.hgetall('players', function(err, players){
+    if (!err){
+      exports.advanceGameState(players);
+      _io.emit(CONSTANTS.ACTIONS.SERVER_TICK,
+        {
+          players: players,
+          frameNumber: _frameNumber,
+          avgTickTime: _dTAvg
+        }
+      );
+    }
   });
+};
+
+exports.advanceGameState = function(players) {
 
 };
 
@@ -51,5 +56,4 @@ var updateTime = function() {
   _time = _newTime;
 
   _frameNumber += 1;
-  _frameNumber = _frameNumber % CONSTANTS.NUM_FRAMES;
 };

@@ -7,6 +7,9 @@ var Actions   = require('./actions');
 
 var GameStore = require('./stores/GameStore');
 
+var socket = io();
+Actions.setupClientSocketEvents(socket)
+
 document.addEventListener('DOMContentLoaded', function(){
 
   ReactDOM.render(
@@ -16,10 +19,4 @@ document.addEventListener('DOMContentLoaded', function(){
 
 });
 
-window.s = io();
-//
-// s.emit('some event', {data: 'hah'} );
-
-s.on(CONSTANTS.ACTIONS.SERVER_TICK, function(data){
-  Actions.serverTick(data);
-})
+window.addEventListener('resize', Actions.resizeWindow);

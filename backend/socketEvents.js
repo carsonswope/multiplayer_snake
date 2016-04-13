@@ -1,5 +1,5 @@
 var redis = require('./redis');
-var Player = require('./util/Player');
+var Player = require('../util/Player');
 
 exports.setupSocketEvents = function(socket){
 

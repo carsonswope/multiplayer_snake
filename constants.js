@@ -21,9 +21,17 @@ exports.DIRS = {
   W: [ 0,-1]
 }
 
+exports.KEYS = {
+  37: 'W', 38: 'N', 39: 'E', 40: 'S'
+}
+
+exports.OPPOSITES = {
+  W: 'E', E: 'W', N: 'S', S: 'N'
+}
+
 exports.BOARD = {
   WIDTH:  50,
-  HEIGHT: 50
+  HEIGHT: 30
 }
 
 exports.ACTIONS = {

@@ -1,10 +1,16 @@
 var React = require('react');
 
+var Board = require('./Board');
+var Header = require('./Header');
+
 var Snake = React.createClass({
 
   render: function() {
     return (
-      <div> dis da snake game </div>
+      <div>
+        <Header />
+        <Board />
+      </div>
     );
   }
 
