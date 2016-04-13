@@ -32,3 +32,11 @@
   margin: 0px;
   /*margin-bottom: -4px;*/
 }
+
+.own-snake {
+  background-color: #4ab;
+}
+
+.other-snake {
+  background-color: #8d1;
+}

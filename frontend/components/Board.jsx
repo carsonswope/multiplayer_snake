@@ -127,22 +127,51 @@ var Board = React.createClass({
 
   },
 
+  positions: function() {
+    var positions = {}
+    var segId;
+
+    if (this.state.gameState) {
+      Object.keys(this.state.gameState.players).forEach(function(id){
+        this.state.gameState.players[id].snake.forEach(function(seg){
+          segId = '' + seg[0] + ',' + seg[1];
+
+          if (id == this.state.ownId) {
+            positions[segId] = CONSTANTS.CELL_TYPES.OWN_SNAKE;
+          } else {
+            positions[segId] = CONSTANTS.CELL_TYPES.OTHER_SNAKE;
+          }
+
+        }.bind(this) );
+      }.bind(this) );
+    }
+
+    return positions;
+  },
+
   cells: function() {
 
-    var rows = [];
-    var cells;
-    var row;
-    var id;
+    var positions = this.positions();
     var squareSize = this.squareSize();
+
+    var rows = [];
+    var cellId, cellClass;
+
+    console.log(positions);
 
     for (var row = 0; row < CONSTANTS.BOARD.HEIGHT; row++) {
       for (var col = 0; col < CONSTANTS.BOARD.WIDTH; col++) {
-        id = '' + row + ',' + col;
+        cellId = '' + row + ',' + col;
+        cellClass = 'cell';
+
+        if (positions[cellId]) {
+          cellClass += CONSTANTS.CELL_STYLES[positions[cellId]];
+        };
 
         rows.push(
-          <div id={id}
-            className='cell'
-            key={id}
+          <div id={cellId}
+            className={cellClass}
+            key={cellId}
             style={{
               width: squareSize,
               height: squareSize

@@ -42,6 +42,6 @@ exports.requestDirChange = function(frame, dir){
     frame: frame,
     dir: dir
   };
-  console.log(params);
+
   _socket.emit(CONSTANTS.PLAYER_MOVES.SET_DIRECTION, params);
 }

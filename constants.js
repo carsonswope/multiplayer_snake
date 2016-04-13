@@ -14,6 +14,18 @@ exports.PLAYER_MOVES = {
   SET_DIRECTION: 2
 }
 
+exports.CELL_TYPES = {
+  OWN_SNAKE: 1,
+  OTHER_SNAKE: 2,
+  APPLE: 3
+}
+
+exports.CELL_STYLES = {
+  1: ' own-snake',
+  2: ' other-snake',
+  3: ' apple'
+}
+
 exports.DIRS = {
   N: [-1, 0],
   S: [ 1, 0],
