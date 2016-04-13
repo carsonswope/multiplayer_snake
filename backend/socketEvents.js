@@ -62,6 +62,8 @@ function setDirection(socket, data){
           player.rewindOneFrameWithNewDirection(data.dir);
           redis.hset('players', socket.id, player.json());
 
+        } else {
+          console.log("missed");
         }
 
 

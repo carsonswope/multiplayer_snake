@@ -54,7 +54,7 @@ Player.prototype.tick = function(ateApple){
 
 };
 
-Player.rewindOneFrameWithNewDirection = function(newDir){
+Player.prototype.rewindOneFrameWithNewDirection = function(newDir){
   this.dir = newDir;
   this.snake.shift();
   this.tick();
