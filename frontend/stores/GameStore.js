@@ -106,13 +106,19 @@ GameStore.updateScreen = function(){
     Actions.requestDirChange(nextFrame, GameStore.moveRequest(nextFrame));
   };
 
+  // debugger;
+
   if (_currentFrame == _lastServerTick.frameNumber) {
 
     _currentState = _lastServerTick;
 
-    // console.log('on time');
+  } else if (_currentState) {
 
-  } else {
+    if (_moveRequests[_currentFrame]) {
+      _currentState.players[GameStore.ownId()].dir = _moveRequests[_currentFrame];
+    }
+
+    GameStore.guessTick();
 
     console.log('server data arrived late');
     console.log('current showing frame: ' + _currentFrame);
@@ -121,6 +127,14 @@ GameStore.updateScreen = function(){
   }
 
   GameStore.__emitChange();
+};
+
+GameStore.guessTick = function(){
+
+  Object.keys(_currentState.players).forEach(function(player){
+    _currentState.players[player].tick();
+  });
+
 };
 
 GameStore.setNewTimeout = function(){
