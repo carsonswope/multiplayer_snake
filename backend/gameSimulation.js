@@ -5,7 +5,7 @@ var _newTime, _dT, _dTAvg;
 var _dTList = [];
 var _dTSum = 0;
 var _interval;
-var _frameNumber = 0;
+global._frameNumber = 0;
 var _redisClient, _io;
 
 exports.tick = function() {

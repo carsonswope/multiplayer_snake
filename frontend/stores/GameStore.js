@@ -12,6 +12,8 @@ var _dTSum = 0;
 var _currentFrame;
 var _currentState;
 
+var _moveRequests = {};
+
 var _playerId;
 // var _lastServerTickFrame;
 
@@ -32,6 +34,9 @@ GameStore.__onDispatch = function(payload) {
 GameStore.currentFrame = function(){ return _currentFrame; }
 GameStore.currentState = function(){ return _currentState; }
 GameStore.ownId = function() { return _playerId; }
+GameStore.moveRequest = function(frame) { return _moveRequests[frame]; }
+GameStore.delMoveRequest = function(frame) { delete _moveRequests[frame]; }
+GameStore.setMoveRequest = function(frame, dir) { _moveRequests[frame] = dir; }
 
 GameStore.receiveServerTick = function(serverGameState, ownId){
 
@@ -92,8 +97,14 @@ GameStore.parseLastServerTick = function(){
 
 GameStore.updateScreen = function(){
 
+  GameStore.delMoveRequest(_currentFrame);
   _currentFrame += 1;
   GameStore.setNewTimeout();
+
+  if (GameStore.moveRequest(_currentFrame + 1)) {
+    var nextFrame = _currentFrame + 1;
+    Actions.requestDirChange(nextFrame, GameStore.moveRequest(nextFrame));
+  };
 
   if (_currentFrame == _lastServerTick.frameNumber) {
 

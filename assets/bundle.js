@@ -71,7 +71,7 @@
 
 	'use strict';
 
-	exports.MS_PER_TICK = 350;
+	exports.MS_PER_TICK = 400;
 	exports.NUMBER_DTS_TO_STORE = 10;
 	exports.NUM_FRAMES = 255;
 	exports.MS_AFTER_EXPECTED_SERVER_UPDATE_ARRIVAL_TO_UPDATE_SCREEN = 10;
@@ -98,7 +98,7 @@
 	  37: 'W', 38: 'N', 39: 'E', 40: 'S'
 	};
 
-	exports.OPPOSITES = {
+	exports.OPPOSITE_DIRS = {
 	  W: 'E', E: 'W', N: 'S', S: 'N'
 	};
 
@@ -19755,6 +19755,7 @@
 
 
 	  getInitialState: function getInitialState() {
+
 	    return {
 	      size: WindowStore.size(),
 	      gameState: GameStore.currentState(),
@@ -19783,7 +19784,8 @@
 	  gameUpdate: function gameUpdate() {
 	    this.setState({
 	      gameState: GameStore.currentState(),
-	      ownId: GameStore.ownId()
+	      ownId: GameStore.ownId(),
+	      currentFrame: GameStore.currentFrame()
 	    });
 	  },
 
@@ -19810,9 +19812,29 @@
 
 	  handleKey: function handleKey(e) {
 
+	    var reqDir;
+	    var waitingReq;
+	    var nextFrame = this.state.currentFrame + 1;
+
+	    // first make sure we are eligible to make a change direction request
 	    if ((this.ownState() == CONSTANTS.PLAYER_STATES.PLACED || this.ownState() == CONSTANTS.PLAYER_STATES.PLAYING) && CONSTANTS.KEYS[e.which]) {
 
-	      console.log(e.which);
+	      reqDir = CONSTANTS.KEYS[e.which];
+	      waitingReq = GameStore.moveRequest(nextFrame);
+
+	      if (!waitingReq && this.ownPlayer().dir != reqDir && this.ownPlayer().dir != CONSTANTS.OPPOSITE_DIRS[reqDir]) {
+
+	        //we can request the move for the next frame
+	        GameStore.setMoveRequest(nextFrame, reqDir);
+	        Actions.requestDirChange(nextFrame, reqDir);
+	      } else if (!GameStore.moveRequest(nextFrame + 1) && waitingReq != reqDir && waitingReq != CONSTANTS.OPPOSITE_DIRS[reqDir]) {
+	        // there already is a move requested for the next frame
+	        // but we can request one for the one after it
+
+	        GameStore.setMoveRequest(nextFrame + 1, reqDir);
+	      }
+
+	      // if neither works, do nothing :)
 	    }
 	  },
 
@@ -20012,8 +20034,17 @@
 	  });
 	};
 
-	exports.requestSpawnLocation = function (requestedLocation) {
-	  _socket.emit(CONSTANTS.PLAYER_MOVES.SET_STARTING_POS, requestedLocation);
+	exports.requestSpawnLocation = function (pos) {
+	  _socket.emit(CONSTANTS.PLAYER_MOVES.SET_STARTING_POS, pos);
+	};
+
+	exports.requestDirChange = function (frame, dir) {
+	  var params = {
+	    frame: frame,
+	    dir: dir
+	  };
+	  console.log(params);
+	  _socket.emit(CONSTANTS.PLAYER_MOVES.SET_DIRECTION, params);
 	};
 
 /***/ },
@@ -20353,6 +20384,8 @@
 	var _currentFrame;
 	var _currentState;
 
+	var _moveRequests = {};
+
 	var _playerId;
 	// var _lastServerTickFrame;
 
@@ -20377,6 +20410,15 @@
 	};
 	GameStore.ownId = function () {
 	  return _playerId;
+	};
+	GameStore.moveRequest = function (frame) {
+	  return _moveRequests[frame];
+	};
+	GameStore.delMoveRequest = function (frame) {
+	  delete _moveRequests[frame];
+	};
+	GameStore.setMoveRequest = function (frame, dir) {
+	  _moveRequests[frame] = dir;
 	};
 
 	GameStore.receiveServerTick = function (serverGameState, ownId) {
@@ -20437,8 +20479,14 @@
 
 	GameStore.updateScreen = function () {
 
+	  GameStore.delMoveRequest(_currentFrame);
 	  _currentFrame += 1;
 	  GameStore.setNewTimeout();
+
+	  if (GameStore.moveRequest(_currentFrame + 1)) {
+	    var nextFrame = _currentFrame + 1;
+	    Actions.requestDirChange(nextFrame, GameStore.moveRequest(nextFrame));
+	  };
 
 	  if (_currentFrame == _lastServerTick.frameNumber) {
 
@@ -27005,6 +27053,7 @@
 	};
 
 	Player.prototype.place = function (newPos) {
+	  console.log(newPos);
 	  this.snake = [newPos];
 	  this.state = CONSTANTS.PLAYER_STATES.PLACED;
 	};

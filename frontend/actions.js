@@ -33,6 +33,15 @@ exports.resizeWindow = function(){
 
 };
 
-exports.requestSpawnLocation = function(requestedLocation){
-  _socket.emit(CONSTANTS.PLAYER_MOVES.SET_STARTING_POS, requestedLocation);
+exports.requestSpawnLocation = function(pos){
+  _socket.emit(CONSTANTS.PLAYER_MOVES.SET_STARTING_POS, pos);
 };
+
+exports.requestDirChange = function(frame, dir){
+  var params = {
+    frame: frame,
+    dir: dir
+  };
+  console.log(params);
+  _socket.emit(CONSTANTS.PLAYER_MOVES.SET_DIRECTION, params);
+}

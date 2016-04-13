@@ -9,6 +9,7 @@ var GameStore = require('../stores/GameStore');
 var Board = React.createClass({
 
   getInitialState: function() {
+
     return ({
        size: WindowStore.size(),
        gameState: GameStore.currentState(),
@@ -37,7 +38,8 @@ var Board = React.createClass({
   gameUpdate: function() {
     this.setState({
       gameState: GameStore.currentState(),
-      ownId: GameStore.ownId()
+      ownId: GameStore.ownId(),
+      currentFrame: GameStore.currentFrame()
     });
   },
 
@@ -65,11 +67,38 @@ var Board = React.createClass({
 
   handleKey: function(e) {
 
+    var reqDir;
+    var waitingReq;
+    var nextFrame = this.state.currentFrame + 1
+
+    // first make sure we are eligible to make a change direction request
     if ((this.ownState() == CONSTANTS.PLAYER_STATES.PLACED ||
         this.ownState() == CONSTANTS.PLAYER_STATES.PLAYING) &&
         CONSTANTS.KEYS[e.which]) {
 
-      console.log(e.which);
+      reqDir = CONSTANTS.KEYS[e.which];
+      waitingReq = GameStore.moveRequest(nextFrame);
+
+
+      if (!waitingReq &&
+          this.ownPlayer().dir != reqDir &&
+          this.ownPlayer().dir != CONSTANTS.OPPOSITE_DIRS[reqDir]) {
+
+        //we can request the move for the next frame
+        GameStore.setMoveRequest(nextFrame, reqDir);
+        Actions.requestDirChange(nextFrame, reqDir);
+
+      } else if (!GameStore.moveRequest(nextFrame + 1) &&
+                 waitingReq != reqDir &&
+                 waitingReq != CONSTANTS.OPPOSITE_DIRS[reqDir]){
+        // there already is a move requested for the next frame
+        // but we can request one for the one after it
+
+        GameStore.setMoveRequest(nextFrame + 1, reqDir);
+
+      }
+
+      // if neither works, do nothing :)
     }
   },
 

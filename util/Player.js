@@ -19,6 +19,7 @@ Player.prototype.canPlace = function(){
 };
 
 Player.prototype.place = function(newPos){
+  console.log(newPos);
   this.snake = [newPos];
   this.state = CONSTANTS.PLAYER_STATES.PLACED;
 }

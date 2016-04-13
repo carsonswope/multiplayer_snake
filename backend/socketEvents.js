@@ -31,12 +31,12 @@ function disconnectUser(socket){
   console.log('user ' + socket.id + ' disconnected');
 };
 
-function setStartingPos(socket, data){
+function setStartingPos(socket, pos){
   redis.hget('players', socket.id, function(error, playerData){
     if (!error) {
       var player = Player.fromJSON(playerData);
       if (player.canPlace()) {
-        player.place(data.pos);
+        player.place(pos);
         redis.hset('players', socket.id, player.json());
       }
     }
@@ -44,6 +44,9 @@ function setStartingPos(socket, data){
 };
 
 function setDirection(socket, data){
+  // TODO
+  // allow player to perhaps undo some move if
+  // it requests with a certain amount of time..
   redis.hget('players', socket.id, function(error, playerData){
     if (!error) {
       var player = Player.fromJSON(playerData);

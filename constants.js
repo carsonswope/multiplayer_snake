@@ -1,4 +1,4 @@
-exports.MS_PER_TICK = 350;
+exports.MS_PER_TICK = 400;
 exports.NUMBER_DTS_TO_STORE = 10;
 exports.NUM_FRAMES = 255;
 exports.MS_AFTER_EXPECTED_SERVER_UPDATE_ARRIVAL_TO_UPDATE_SCREEN = 10;
@@ -25,7 +25,7 @@ exports.KEYS = {
   37: 'W', 38: 'N', 39: 'E', 40: 'S'
 }
 
-exports.OPPOSITES = {
+exports.OPPOSITE_DIRS = {
   W: 'E', E: 'W', N: 'S', S: 'N'
 }
 
