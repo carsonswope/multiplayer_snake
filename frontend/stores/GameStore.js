@@ -3,34 +3,54 @@ var Store = require('flux/utils').Store;
 
 var Actions = require('../actions');
 
-var _lastServerTick;
+var _lastServerTick, _updating;
 var _time, _newTime, _dT, _dTAvg;
 var _dTList = [];
 var _dTSum = 0;
-
 var _currentFrame;
-var _lastServerTickFrame;
-
-var _localUpdating = false;
-var _timeToNextUpdate;
+// var _lastServerTickFrame;
 
 var GameStore = new Store(Dispatcher);
 
+GameStore.currentFrame = function(){ return _currentFrame; }
+
 GameStore.receiveServerTick = function(gameState){
+
+  _lastServerTick = gameState;
+
+  if (gameState.frameNumber > _currentFrame ||
+      (_currentFrame + 1) % CONSTANTS.NUM_FRAMES == gameState.frameNumber) {
+  // if we are receiving data from the server about a frame
+  // that we will show shortly, just copy the data from the server
+  // into our game state store
+    console.log('goood');
+
+  } else if (gameState.frameNumber == _currentFrame) {
+  // otherwise, we had to predict what the board will look like
+  // because this frame hadn't arrived yet - we may need to
+  // update the screen immediately to fix discrepencies between
+  // our predictions and the state of the board
+    console.log('baaad')
+  } else {
+  // hmm... old data. discard?
+
+  }
 
   _lastServerTick = gameState;
   _lastServerTick.arrivalTime = new Date();
   GameStore.updateTimeStore();
 
-  if ( !_localUpdating && _dTList.length == CONSTANTS.NUMBER_DTS_TO_STORE ) {
+  if ( !_updating && _dTList.length == CONSTANTS.NUMBER_DTS_TO_STORE ) {
 
     // make first setTimeout call, calling updateScreen
     // which sets the update loop in motion
-    console.log('started update');
-    _localUpdating = true;
+    _updating = true;
+
+    // first frame that gets rendered is actually the next one
     _currentFrame = _lastServerTick.frameNumber;
-    _timeToNextUpdate = _dTAvg + CONSTANTS.MS_AFTER_EXPECTED_SERVER_UPDATE_ARRIVAL_TO_UPDATE_SCREEN;
-    setTimeout(Actions.updateScreen, _timeToNextUpdate);
+
+    var timeToNextUpdate = _dTAvg + CONSTANTS.MS_AFTER_EXPECTED_SERVER_UPDATE_ARRIVAL_TO_UPDATE_SCREEN;
+    setTimeout(Actions.updateScreen, timeToNextUpdate);
   };
 
 };
