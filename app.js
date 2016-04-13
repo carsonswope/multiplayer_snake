@@ -23,5 +23,5 @@ redis.flushdb();
 
 io.sockets.on('connection', ioEvents.setupSocketEvents);
 
-// game.start(redis, io.sockets);
+game.start(redis, io.sockets);
 // setTimeout(game.stop, 100000);

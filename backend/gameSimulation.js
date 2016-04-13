@@ -12,24 +12,16 @@ var _io;
 exports.tick = function() {
 
   updateTime();
-  _redisClient.set('frame number', _frameNumber)
-  console.log('observed: ' + _dT + ' last avg: ' + _dTAvg);
-  // console.log(_frameNumber);
-  _redisClient.get('frame number', function(err, reply){
-    // console.log('eer: ' + err);
-    // _io.emit('event', {data: 'hi'})
+
+  _redisClient.hgetall('players', function(err, users){
+    _io.emit(CONSTANTS.ACTIONS.SERVER_TICK,
+      {
+        users: users,
+        frameNumber: _frameNumber,
+        avgTickTime: _dTAvg
+      }
+    );
   });
-
-  var ids = _io.sockets.map(function(s){
-    return s.id;
-  })
-
-  console.log(ids);
-
-  _redisClient.hgetall('users data', function(err, users){
-    _io.emit('event', users);
-  });
-  // _io.emit('event', {data: 'wohoo' });
 
 };
 
@@ -37,20 +29,8 @@ exports.start = function(redisClient, io) {
 
   _redisClient = redisClient;
   _io = io;
-
-  user1 = { username: 'me'   }
-  user2 = { username: 'yhou' }
-
-  userInfo = [
-    {name: 'p1', email: 'email1'},
-    {name: 'p2', email: 'email2'}
-  ]
-
-  console.log(JSON.stringify(userInfo));
-
-  _redisClient.hset('users data', 'data', JSON.stringify(userInfo));
-
   _interval = setInterval(exports.tick, CONSTANTS.MS_PER_TICK);
+
 };
 
 exports.stop = function() {

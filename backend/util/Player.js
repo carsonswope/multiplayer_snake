@@ -32,15 +32,15 @@ Player.prototype.changeDir = function(newDir){
   this.state = CONSTANTS.PLAYER_STATES.PLAYING;
 };
 
-Player.tick = function(ateApple = false){
-  var dPos = CONSTANTS.DIRS[this.dir];
-  snake.unshift([
-    this.snake[0] + dPos[0],
-    this.snake[1] + dPos[1]
-  ])
-
-  if (!ateApple) { this.snake.pop(); }
-
-};
+// Player.prototype.tick = function(ateApple){
+//   var dPos = CONSTANTS.DIRS[this.dir];
+//   snake.unshift([
+//     this.snake[0] + dPos[0],
+//     this.snake[1] + dPos[1]
+//   ])
+//
+//   if (!ateApple) { this.snake.pop(); }
+//
+// };
 
 module.exports = Player;
