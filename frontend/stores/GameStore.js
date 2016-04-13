@@ -114,9 +114,9 @@ GameStore.updateScreen = function(){
 
   } else {
 
-    // console.log('server data arrived late');
-    // console.log('current showing frame: ' + _currentFrame);
-    // console.log('last server arrived  : ' + _lastServerTick.frameNumber);
+    console.log('server data arrived late');
+    console.log('current showing frame: ' + _currentFrame);
+    console.log('last server arrived  : ' + _lastServerTick.frameNumber);
 
   }
 
