@@ -46,7 +46,6 @@ GameStore.receiveServerTick = function(serverGameState, ownId){
   // if we are receiving data from the server about a frame
   // that we will show shortly, just copy the data from the server
   // into our game state store
-    // console.log('goood');
 
   } else if (serverGameState.frameNumber == _currentFrame) {
   // otherwise, we had to predict what the board will look like

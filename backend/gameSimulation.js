@@ -8,6 +8,7 @@ var _dTList = [];
 var _dTSum = 0;
 var _interval;
 global._frameNumber = 0;
+global._lastFrameTime;
 var _redisClient, _io;
 
 exports.tick = function() {
@@ -35,11 +36,8 @@ exports.advanceGameState = function(players) {
     Object.keys(players).forEach(function(player){
 
       currentPlayer = Player.fromJSON(players[player]);
-      //
       currentPlayer.nextPos();
-      //
       currentPlayer.tick();
-      //
       _redisClient.hset('players', player, currentPlayer.json());
 
     })
@@ -73,4 +71,5 @@ var updateTime = function() {
   _time = _newTime;
 
   _frameNumber += 1;
+  _lastFrameTime = new Date();
 };

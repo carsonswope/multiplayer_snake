@@ -54,4 +54,10 @@ Player.prototype.tick = function(ateApple){
 
 };
 
+Player.rewindOneFrameWithNewDirection = function(newDir){
+  this.dir = newDir;
+  this.snake.shift();
+  this.tick();
+};
+
 module.exports = Player;

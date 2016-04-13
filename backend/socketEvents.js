@@ -51,8 +51,22 @@ function setDirection(socket, data){
     if (!error) {
       var player = Player.fromJSON(playerData);
       if (player.canChangeDir()) {
-        player.changeDir(data.dir);
-        redis.hset('players', socket.id, player.json());
+        if (data.frame > _frameNumber) {
+          player.changeDir(data.dir);
+          redis.hset('players', socket.id, player.json());
+        } else if (data.frame == _frameNumber &&
+                   new Date() - _lastFrameTime < CONSTANTS.MS_LATE_A_DIRECTION_CHANGE_CAN_ARRIVE) {
+          // the request to change direction arrived late,
+          // but soon enough that we will rewind that player and let them
+          // continue as they wanted to move
+          player.rewindOneFrameWithNewDirection(data.dir);
+          redis.hset('players', socket.id, player.json());
+
+        }
+
+
+
+
       }
     }
   });
