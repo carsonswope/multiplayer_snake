@@ -1,5 +1,3 @@
-var CONSTANTS = require('./constants/Constants')
-
 var redis = require('redis');
 
 var _time = new Date();
@@ -19,16 +17,39 @@ exports.tick = function() {
   // console.log(_frameNumber);
   _redisClient.get('frame number', function(err, reply){
     // console.log('eer: ' + err);
-    _io.emit('event', {data: reply})
+    // _io.emit('event', {data: 'hi'})
   });
 
+  var ids = _io.sockets.map(function(s){
+    return s.id;
+  })
+
+  console.log(ids);
+
+  _redisClient.hgetall('users data', function(err, users){
+    _io.emit('event', users);
+  });
   // _io.emit('event', {data: 'wohoo' });
 
 };
 
 exports.start = function(redisClient, io) {
+
   _redisClient = redisClient;
   _io = io;
+
+  user1 = { username: 'me'   }
+  user2 = { username: 'yhou' }
+
+  userInfo = [
+    {name: 'p1', email: 'email1'},
+    {name: 'p2', email: 'email2'}
+  ]
+
+  console.log(JSON.stringify(userInfo));
+
+  _redisClient.hset('users data', 'data', JSON.stringify(userInfo));
+
   _interval = setInterval(exports.tick, CONSTANTS.MS_PER_TICK);
 };
 

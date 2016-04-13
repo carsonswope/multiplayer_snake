@@ -42,9 +42,11 @@
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
+
+	window.CONSTANTS = __webpack_require__(1);
 
 	document.addEventListener('DOMContentLoaded', function () {
 
@@ -52,9 +54,42 @@
 	  //
 	  // s.emit('some event', {data: 'hah'} );
 	  s.on('event', function (data) {
-	    console.log(data);
+	    var x = JSON.parse(data.data);
+	    console.log(x[0]);
+	    console.log(x[1]);
+	    console.log(s.id);
 	  });
+
+	  console.log(s.id);
 	});
+
+/***/ },
+/* 1 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	exports.MS_PER_TICK = 550;
+	exports.NUMBER_DTS_TO_STORE = 10;
+	exports.NUM_FRAMES = 25;
+
+	exports.PLAYER_STATES = {
+	  PLAYING: 1,
+	  PLACED: 2,
+	  DEAD: 3
+	};
+
+	exports.PLAYER_MOVES = {
+	  SET_STARTING_POS: 1,
+	  SET_DIRECTION: 2
+	};
+
+	exports.DIRS = {
+	  N: [-1, 0],
+	  S: [1, 0],
+	  E: [0, 1],
+	  W: [0, -1]
+	};
 
 /***/ }
 /******/ ]);

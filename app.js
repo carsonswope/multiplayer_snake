@@ -1,34 +1,27 @@
-var https   = require('https');
 var express = require('express');
-var config  = require('./config');
-var client  = require('./redis');
-var socketio= require('./backend/socket');
+var redis = require('./backend/redis');
+var game = require('./backend/gameSimulation');
+var ioEvents = require('./backend/socketEvents');
 
-var gameTick= require('./backend/gameTick');
-
-//this is everything the express server does,
-//it simply serves static files
+// allow constants to be
+global.CONSTANTS = require('./constants');
 
 var app = express();
+var server = require('http').createServer(app);
+var io = require('socket.io')(server);
 
+// serving static assets and home page
+// listen to specified port
 app.use(express.static(__dirname + '/assets'));
-app.set('port', config.PORT);
 app.get('/', function(req, res){ res.sendFile('index.html'); });
+server.listen(process.env.PORT);
 
-var server = app.listen(app.get('port'), function() {
-  console.log('server on port ' + server.address().port);
-});
+// remove old data from redis cache, when starting server
+// shouldn't be necessary in production
+// but in testing sometimes the server crashes and leaves stuff in the cache
+redis.flushdb();
 
-socketio(server);
-// this sets up the game loop
+io.sockets.on('connection', ioEvents.setupSocketEvents);
 
-var loopInterval = setInterval(gameTick, 1000);
-
-
-/*
-
-links:
-
-http://expressjs.com/en/guide/routing.html
-
-*/
+// game.start(redis, io.sockets);
+// setTimeout(game.stop, 100000);
