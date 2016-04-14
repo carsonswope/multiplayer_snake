@@ -45,7 +45,7 @@ var Header = React.createClass({
       case undefined:
         return 'connecting..'
       case CONSTANTS.PLAYER_STATES.DEAD:
-        return 'click on board to spawn';
+        return 'click on board to join';
       case CONSTANTS.PLAYER_STATES.PLACED:
         return 'arrow key to start moving';
       case CONSTANTS.PLAYER_STATES.PLAYING:

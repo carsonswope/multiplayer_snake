@@ -52,9 +52,12 @@ Player.prototype.handleClientSetPositionRequest = function(pos) {
 };
 
 Player.prototype.handleClientSetDirectionRequest = function(request) {
-    this.snake = request.snake;
-    this.dir = request.dir;
-    this.tick();
+  if (!this.canChangeDir()) { return; }
+
+  this.state = CONSTANTS.PLAYER_STATES.PLAYING;
+  this.snake = request.snake;
+  this.dir = request.dir;
+  this.tick();
 };
 
 Player.prototype.acceptableFrameToRequest = function(frame) {

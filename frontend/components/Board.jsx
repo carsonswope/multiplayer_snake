@@ -63,6 +63,15 @@ var Board = React.createClass({
     }
   },
 
+  eligibleMove: function(currentDir, testDir) {
+
+    return (
+      currentDir != testDir &&
+      CONSTANTS.OPPOSITE_DIRS[currentDir] != testDir
+    )
+
+  },
+
   handleKey: function(e) {
 
     if (!this.ownPlayer() ||
@@ -70,22 +79,32 @@ var Board = React.createClass({
         !CONSTANTS.KEYS[e.which]) { return; }
 
     var reqDir = CONSTANTS.KEYS[e.which];
-    // var nextFrame = this.state.currentFrame + 1;
+    var frame = this.state.currentFrame;
+    var player = this.ownPlayer();
 
-    // debugger
-    //
-    // var nextPiece = MathUtil.posSum(
-    //   this.ownPlayer().snake[0],
-    //   CONSTANTS.DIRS[reqDir]
-    // )
-    //
-    // var snakeEnd;
-    //
-    // if (this.ownPlayer().snake.length < 10) { snakeEnd = this.ownPlayer().snake.length; }
-    // else { snakeEnd = -1; }
-    // var nextSnake = [nextPiece].concat(this.ownPlayer().snake.slice(0, snakeEnd));
+    if (!GameStore.moveRequest(frame)) {
+      if (this.eligibleMove(player.dir, reqDir)) {
+        GameStore.setMoveRequest(frame, reqDir, player.snake);
+        Actions.requestDirChange(frame, reqDir, player.snake);
+      }
+    } else if (!GameStore.moveRequest(frame + 1)) {
 
-    Actions.requestDirChange(this.state.currentFrame, reqDir, this.ownPlayer().snake);
+      if (this.eligibleMove(GameStore.moveRequest(frame).dir, reqDir)) {
+
+        var newHead = MathUtil.posSum(
+          player.snake[0],
+          CONSTANTS.DIRS[GameStore.moveRequest(frame).dir]
+        );
+
+        var newSnake = [newHead].concat(player.snake);
+        if (newSnake.length > 10) { newSnake = newSnake.slice(0, -1); }
+
+        GameStore.setMoveRequest(frame + 1, reqDir, newSnake);
+
+      }
+
+    }
+
 
   },
 

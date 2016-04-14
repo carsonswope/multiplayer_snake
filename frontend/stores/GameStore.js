@@ -89,7 +89,13 @@ GameStore.parseLastServerTick = function(skipSelf){
 
 GameStore.updateScreen = function(){
 
+  GameStore.delMoveRequest(_currentFrame);
   _currentFrame += 1;
+  if (GameStore.moveRequest(_currentFrame)) {
+    var req = GameStore.moveRequest(_currentFrame);
+    Actions.requestDirChange(req.frame, req.dir, req.snake);
+  };
+
   GameStore.setNewTimeout();
   GameStore.delMoveRequest(_currentFrame);
   GameStore.__emitChange();
