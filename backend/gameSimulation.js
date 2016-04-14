@@ -32,23 +32,19 @@ exports.tick = function() {
 };
 
 exports.advanceGameState = function(players) {
+  if (!players) { return; }
 
   var currentPlayer;
-  if (players){
-    Object.keys(players).forEach(function(player){
 
-      currentPlayer = Player.fromJSON(players[player]);
-      currentPlayer.nextPos();
-      currentPlayer.tick();
-      _redisClient.hset('players', player, currentPlayer.json());
-
-    })
-  }
+  Object.keys(players).forEach(function(player){
+    currentPlayer = Player.fromJSON(players[player]);
+    currentPlayer.tick();
+    _redisClient.hset('players', player, currentPlayer.json());
+  });
 
 };
 
 exports.start = function(redisClient, io) {
-
   _redisClient = redisClient;
   _io = io;
   _interval = setInterval(exports.tick, CONSTANTS.MS_PER_TICK);

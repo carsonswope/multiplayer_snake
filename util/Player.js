@@ -44,15 +44,11 @@ Player.prototype.changeDir = function(newDir){
 };
 
 Player.prototype.nextPos = function(){
-  if (this.dir) {
-    var dPos = CONSTANTS.DIRS[this.dir];
-    return ([
-      this.snake[0][0] + dPos[0],
-      this.snake[0][1] + dPos[1]
-    ]);
-  } else {
-    return undefined;
-  }
+  if (!this.dir) { return; }
+  return MathUtil.posSum(
+    this.snake[0],
+    CONSTANTS.DIRS[this.dir]
+  );
 };
 
 Player.prototype.setLastApproved = function(req) {
@@ -69,14 +65,14 @@ Player.prototype.handleClientSetPositionRequest = function(pos) {
 Player.prototype.handleClientSetDirectionRequest = function(request) {
 
   if (this.acceptableFrameToRequest(request.frame - 1)) {
-      this.lastApproved = {
-          snake: request.snake,
-          frame: request.frame - 1
-        }
+    this.lastApproved = {
+        snake: request.snake,
+        frame: request.frame - 1
+      }
 
-        this.snake = request.snake;
-        this.dir = request.dir;
-  }
+    this.snake = request.snake;
+    this.dir = request.dir;
+}
 
 };
 
@@ -111,13 +107,11 @@ Player.prototype.acceptableFrameToRequest = function(frame) {
 
 };
 
-
-Player.prototype.tick = function(ateApple){
+Player.prototype.tick = function(){
   if (this.nextPos()){
     this.snake.unshift(this.nextPos());
   }
   if (this.snake.length > 10) { this.snake.pop(); }
 };
-
 
 module.exports = Player;
