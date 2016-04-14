@@ -1,8 +1,6 @@
 exports.MS_PER_TICK = 120;
 exports.NUMBER_DTS_TO_STORE = 10;
-exports.NUM_FRAMES = 255;
 exports.MS_AFTER_EXPECTED_SERVER_UPDATE_ARRIVAL_TO_UPDATE_SCREEN = 6;
-exports.MS_LATE_A_DIRECTION_CHANGE_CAN_ARRIVE = parseInt(process.env.LATE_CUTOFF);
 exports.SERVER_FRAME_RANGE = {
   lo: -5.2,
   hi: 5.9
