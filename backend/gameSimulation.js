@@ -3,10 +3,12 @@ var redis = require('redis');
 var Player = require('../util/Player');
 
 var _time = new Date();
-var _newTime, _dT, _dTAvg;
+var _newTime, _dTAvg, _dT;
 var _dTList = [];
 var _dTSum = 0;
 var _interval;
+
+global._serverDTAvg;
 global._frameNumber = 0;
 global._lastFrameTime;
 var _redisClient, _io;
@@ -68,6 +70,7 @@ var updateTime = function() {
   }
 
   _dTAvg = _dTSum / _dTList.length;
+  _serverDTAvg = _dTAvg;
   _time = _newTime;
 
   _frameNumber += 1;

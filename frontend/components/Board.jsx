@@ -3,6 +3,8 @@ var PropTypes = React.PropTypes;
 
 var Actions = require('../actions');
 
+var MathUtil = require('../../util/MathUtil');
+
 var WindowStore = require('../stores/WindowStore');
 var GameStore = require('../stores/GameStore');
 
@@ -44,19 +46,15 @@ var Board = React.createClass({
   },
 
   ownPlayer: function() {
-    if (this.state.gameState) {
-      return this.state.gameState.players[this.state.ownId]
-    }
+    if (this.state.gameState) { return this.state.gameState.players[this.state.ownId] }
   },
 
-  ownState: function() {
-    if (this.ownPlayer()) {
-      return this.ownPlayer().state;
-    }
+  ownPlayerState: function() {
+    if (this.ownPlayer()) { return this.ownPlayer().state; }
   },
 
   handleClick: function(e) {
-    if (this.ownState() == CONSTANTS.PLAYER_STATES.DEAD){
+    if (this.ownPlayerState() == CONSTANTS.PLAYER_STATES.DEAD){
       var requestedSpawnLocation =
         e.target.id.split(',').map(function(coord){
           return parseInt(coord);
@@ -71,34 +69,24 @@ var Board = React.createClass({
     var waitingReq;
     var nextFrame = this.state.currentFrame + 1
 
-    // first make sure we are eligible to make a change direction request
-    if ((this.ownState() == CONSTANTS.PLAYER_STATES.PLACED ||
-        this.ownState() == CONSTANTS.PLAYER_STATES.PLAYING) &&
+    if (this.ownPlayerState() !== CONSTANTS.PLAYER_STATES.DEAD &&
         CONSTANTS.KEYS[e.which]) {
 
       reqDir = CONSTANTS.KEYS[e.which];
-      waitingReq = GameStore.moveRequest(nextFrame);
 
-      if (!waitingReq &&
-          this.ownPlayer().dir != reqDir &&
-          this.ownPlayer().dir != CONSTANTS.OPPOSITE_DIRS[reqDir]) {
+      var nextPiece = MathUtil.posSum(
+        this.ownPlayer().snake[0],
+        CONSTANTS.DIRS[reqDir]
+      )
 
-        //we can request the move for the next frame
-        GameStore.setMoveRequest(nextFrame, reqDir);
-        Actions.requestDirChange(nextFrame, reqDir);
+      var snakeEnd;
 
-      } else if (waitingReq &&
-                 !GameStore.moveRequest(nextFrame + 1) &&
-                 waitingReq != reqDir &&
-                 waitingReq != CONSTANTS.OPPOSITE_DIRS[reqDir]){
-        // there already is a move requested for the next frame
-        // but we are eligible to request one for the one after it
+      if (this.ownPlayer().snake.length < 10) { snakeEnd = this.ownPlayer().snake.length; }
+      else { snakeEnd = -1; }
+      var nextSnake = [nextPiece].concat(this.ownPlayer().snake.slice(0, snakeEnd));
 
-        GameStore.setMoveRequest(nextFrame + 1, reqDir);
+      Actions.requestDirChange(nextFrame, reqDir, nextSnake);
 
-      }
-
-      // if neither works, do nothing :)
     }
   },
 
@@ -186,6 +174,7 @@ var Board = React.createClass({
   },
 
   render: function() {
+
     return (
       <div id='board-main'
         onClick={this.handleClick}

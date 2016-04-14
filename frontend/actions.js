@@ -37,10 +37,11 @@ exports.requestSpawnLocation = function(pos){
   _socket.emit(CONSTANTS.PLAYER_MOVES.SET_STARTING_POS, pos);
 };
 
-exports.requestDirChange = function(frame, dir){
+exports.requestDirChange = function(frame, dir, snake){
   var params = {
     frame: frame,
-    dir: dir
+    dir: dir,
+    snake: snake
   };
 
   _socket.emit(CONSTANTS.PLAYER_MOVES.SET_DIRECTION, params);
