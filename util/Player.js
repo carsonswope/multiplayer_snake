@@ -6,6 +6,7 @@ function Player(options){
   this.snake =  options.snake || [];
   this.state =  options.state || CONSTANTS.PLAYER_STATES.DEAD;
   this.dir =    options.dir   || undefined;
+  this.length = options.length || 2;
   this.lastApproved = options.lastApproved ||
     {
       snake: [],
@@ -91,11 +92,24 @@ Player.prototype.acceptableFrameToRequest = function(frame) {
 
 };
 
-Player.prototype.tick = function(){
+Player.prototype.tick = function(applePositions, appleReset){
   if (this.nextPos()){
+
+    if (applePositions) {
+      console.log(applePositions);
+
+      applePositions.forEach(function(apple, i){
+        if (MathUtil.stepsAway(apple, this.snake[0]) == 0) {
+          this.length += 1;
+          appleReset(i);
+        }
+
+      }.bind(this) );
+    }
+
     this.snake.unshift(this.nextPos());
   }
-  if (this.snake.length > 10) { this.snake.pop(); }
+  if (this.snake.length > this.length) { this.snake.pop(); }
 };
 
 module.exports = Player;

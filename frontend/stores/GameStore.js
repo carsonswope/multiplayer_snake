@@ -41,6 +41,8 @@ GameStore.receiveServerTick = function(serverGameState, ownId){
 
   if (!_playerId) { _playerId = ownId; }
 
+  console.log(serverGameState.apple);
+
   // if the server update we get is newer than the most recent one,
   // reset last server tick to that
   if (!_lastServerTick || _lastServerTick.frameNumber < serverGameState.frameNumber ) {

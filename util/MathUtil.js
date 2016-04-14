@@ -8,3 +8,9 @@ exports.posSum = function(pos1, pos2) {
     pos1[0] + pos2[0], pos1[1] + pos2[1]
   ]);
 }
+
+exports.random = function(max) {
+
+  return Math.floor(Math.random() * max);
+
+}

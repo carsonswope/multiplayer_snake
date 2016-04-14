@@ -154,8 +154,19 @@ var Board = React.createClass({
             positions[segId] = CONSTANTS.CELL_TYPES.OTHER_SNAKE;
           }
 
+
         }.bind(this) );
       }.bind(this) );
+
+
+      if (this.state.gameState.apples) {
+        this.state.gameState.apples.forEach(function(apple){
+          segId = '' + apple[0] + ',' + apple[1];
+
+          positions[segId] = CONSTANTS.CELL_TYPES.APPLE;
+
+        })
+      }
     }
 
     return positions;
@@ -168,6 +179,13 @@ var Board = React.createClass({
 
     var rows = [];
     var cellId, cellClass;
+    // var apple, appleString;
+
+    // if (this.state.gameState && this.state.gameState.apple) {
+    //   apple = this.state.gameState.apple;
+    //   appleString = '' + apple[0] + ',' + apple[1];
+    // }
+
 
     for (var row = 0; row < CONSTANTS.BOARD.HEIGHT; row++) {
       for (var col = 0; col < CONSTANTS.BOARD.WIDTH; col++) {
