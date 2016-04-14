@@ -100,6 +100,8 @@ var Board = React.createClass({
           CONSTANTS.DIRS[GameStore.moveRequest(frame).dir]
         );
 
+        // construct a proposed future snake that reflects
+        // the result of the currently requested move
         var newSnake = [newHead].concat(player.snake);
         if (newSnake.length > 10) { newSnake = newSnake.slice(0, -1); }
 
