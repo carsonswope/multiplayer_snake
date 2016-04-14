@@ -28,10 +28,6 @@ Player.prototype.canPlace = function(){
 Player.prototype.place = function(newPos){
   this.snake = [newPos];
   this.state = CONSTANTS.PLAYER_STATES.PLACED;
-  this.setLastApproved({
-    snake: this.snake,
-    frame: _frameNumber
-  });
 }
 
 Player.prototype.canChangeDir = function(){
@@ -51,36 +47,14 @@ Player.prototype.nextPos = function(){
   );
 };
 
-Player.prototype.setLastApproved = function(req) {
-  this.lastApproved = {
-    snake: req.snake,
-    frame: req.frame,
-  }
-};
-
 Player.prototype.handleClientSetPositionRequest = function(pos) {
   if (this.canPlace()) { this.place(pos); }
 };
 
 Player.prototype.handleClientSetDirectionRequest = function(request) {
-
-  // console.log(request.frame);
-  // console.log(_frameNumber);
-
-  if (this.acceptableFrameToRequest(request.frame)) {
-
-
-    this.lastApproved = {
-        snake: request.snake,
-        frame: request.frame
-      }
-
     this.snake = request.snake;
     this.dir = request.dir;
-
     this.tick();
-}
-
 };
 
 Player.prototype.acceptableFrameToRequest = function(frame) {
