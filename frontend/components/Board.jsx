@@ -82,6 +82,10 @@ var Board = React.createClass({
     var frame = this.state.currentFrame;
     var player = this.ownPlayer();
 
+    // all of this logic just to make sure a player doesn't turn
+    // into itself, and that when you press 2 keys rapidly,
+    // you can make the first move on the current frame
+    // and the second move on the next one
     if (!GameStore.moveRequest(frame)) {
       if (this.eligibleMove(player.dir, reqDir)) {
         GameStore.setMoveRequest(frame, reqDir, player.snake);

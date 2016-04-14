@@ -13,7 +13,6 @@ var _currentState;
 
 var _moveRequests = {};
 var _playerId;
-// var _lastServerTickFrame;
 var GameStore = new Store(Dispatcher);
 
 GameStore.__onDispatch = function(payload) {
@@ -97,15 +96,17 @@ GameStore.updateScreen = function(){
   };
 
   GameStore.setNewTimeout();
-  GameStore.delMoveRequest(_currentFrame);
   GameStore.__emitChange();
 };
 
+// doesn't currently get called - for when we are showing a frame where
+// the server hasn't updated us!
+// useful when player makes a move but it doesn't register right away
+// with the server
 GameStore.guessTick = function(){
   Object.keys(_currentState.players).forEach(function(player){
     _currentState.players[player].tick();
   });
-
 };
 
 GameStore.setNewTimeout = function(){
