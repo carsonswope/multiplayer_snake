@@ -65,29 +65,28 @@ var Board = React.createClass({
 
   handleKey: function(e) {
 
-    var reqDir;
-    var waitingReq;
-    var nextFrame = this.state.currentFrame + 1
+    if (!this.ownPlayer() ||
+        this.ownPlayerState() === CONSTANTS.PLAYER_STATES.DEAD ||
+        !CONSTANTS.KEYS[e.which]) { return; }
 
-    if (this.ownPlayerState() !== CONSTANTS.PLAYER_STATES.DEAD &&
-        CONSTANTS.KEYS[e.which]) {
+    var reqDir = CONSTANTS.KEYS[e.which];
+    // var nextFrame = this.state.currentFrame + 1;
 
-      reqDir = CONSTANTS.KEYS[e.which];
+    // debugger
+    //
+    // var nextPiece = MathUtil.posSum(
+    //   this.ownPlayer().snake[0],
+    //   CONSTANTS.DIRS[reqDir]
+    // )
+    //
+    // var snakeEnd;
+    //
+    // if (this.ownPlayer().snake.length < 10) { snakeEnd = this.ownPlayer().snake.length; }
+    // else { snakeEnd = -1; }
+    // var nextSnake = [nextPiece].concat(this.ownPlayer().snake.slice(0, snakeEnd));
 
-      var nextPiece = MathUtil.posSum(
-        this.ownPlayer().snake[0],
-        CONSTANTS.DIRS[reqDir]
-      )
+    Actions.requestDirChange(this.state.currentFrame, reqDir, this.ownPlayer().snake);
 
-      var snakeEnd;
-
-      if (this.ownPlayer().snake.length < 10) { snakeEnd = this.ownPlayer().snake.length; }
-      else { snakeEnd = -1; }
-      var nextSnake = [nextPiece].concat(this.ownPlayer().snake.slice(0, snakeEnd));
-
-      Actions.requestDirChange(nextFrame, reqDir, nextSnake);
-
-    }
   },
 
   boardDims: function() {

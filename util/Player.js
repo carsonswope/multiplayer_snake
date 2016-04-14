@@ -64,14 +64,21 @@ Player.prototype.handleClientSetPositionRequest = function(pos) {
 
 Player.prototype.handleClientSetDirectionRequest = function(request) {
 
-  if (this.acceptableFrameToRequest(request.frame - 1)) {
+  // console.log(request.frame);
+  // console.log(_frameNumber);
+
+  if (this.acceptableFrameToRequest(request.frame)) {
+
+
     this.lastApproved = {
         snake: request.snake,
-        frame: request.frame - 1
+        frame: request.frame
       }
 
     this.snake = request.snake;
     this.dir = request.dir;
+
+    this.tick();
 }
 
 };
