@@ -31,7 +31,7 @@ exports.tick = function() {
   _redisClient.hgetall('players', function(err, players){
     if (!err){
 
-      exports.checkCurrentGameState(players, apples, _frameNumber);
+      exports.checkCurrentGameState(players, apples, _frameNumber - 1);
 
       _io.emit(CONSTANTS.ACTIONS.SERVER_TICK,
         {
