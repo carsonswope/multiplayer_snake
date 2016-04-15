@@ -1,10 +1,6 @@
 exports.MS_PER_TICK = 120;
 exports.NUMBER_DTS_TO_STORE = 10;
 exports.MS_AFTER_EXPECTED_SERVER_UPDATE_ARRIVAL_TO_UPDATE_SCREEN = 12;
-exports.SERVER_FRAME_RANGE = {
-  lo: -5.2,
-  hi: 5.9
-}
 
 exports.PLAYER_STATES = {
   PLAYING: 1,

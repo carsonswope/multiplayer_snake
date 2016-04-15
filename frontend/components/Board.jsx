@@ -152,9 +152,17 @@ var Board = React.createClass({
 
     Object.keys(this.state.gameState.players).forEach(function(id){
 
+      var showFrame;
+
+      if (id == this.state.ownId) {
+        showFrame = GameStore.currentFrame();
+      } else {
+        showFrame = GameStore.currentFrame() - 1;
+      }
+
       tempSnake =
         this.state.gameState.players[id]
-        .snakeAtFrame(GameStore.currentFrame());
+        .snakeAtFrame(showFrame);
 
       tempSnake.forEach(function(seg){
         segId = '' + seg[0] + ',' + seg[1];
