@@ -33,9 +33,13 @@ function disconnectUser(socket){
 function setStartingPos(socket, pos){
   redis.hget('players', socket.id, function(error, playerData){
     if (!error) {
-      var player = Player.fromJSON(playerData);
-      player.handleClientSetPositionRequest(pos);
-      redis.hset('players', socket.id, player.json());
+      redis.hget('time', 'frameNumber', function(error, frameNumber){
+        if (!error) {
+          var player = Player.fromJSON(playerData);
+          player.handleClientSetPositionRequest(pos, frameNumber);
+          redis.hset('players', socket.id, player.json());
+        }
+      })
     }
   });
 };
@@ -43,9 +47,13 @@ function setStartingPos(socket, pos){
 function setDirection(socket, data){
   redis.hget('players', socket.id, function(error, playerData){
     if (!error) {
-      var player = Player.fromJSON(playerData);
-      player.handleClientSetDirectionRequest(data);
-      redis.hset('players', socket.id, player.json());
+      redis.hget('time', 'frameNumber', function(error, frameNumber){
+        if (!error) {
+          var player = Player.fromJSON(playerData);
+          player.handleClientSetDirectionRequest(data, frameNumber);
+          redis.hset('players', socket.id, player.json());
+        }
+      })
     }
   });
 };

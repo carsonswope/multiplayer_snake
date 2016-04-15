@@ -41,8 +41,6 @@ GameStore.receiveServerTick = function(serverGameState, ownId){
 
   if (!_playerId) { _playerId = ownId; }
 
-  console.log(serverGameState.apple);
-
   // if the server update we get is newer than the most recent one,
   // reset last server tick to that
   if (!_lastServerTick || _lastServerTick.frameNumber < serverGameState.frameNumber ) {
@@ -80,23 +78,31 @@ GameStore.initiateUpdateLoopIfNecessary = function(){
 
 }
 
-GameStore.parseLastServerTick = function(skipSelf){
+GameStore.parseLastServerTick = function(){
+
   Object.keys(_lastServerTick.players).forEach(function(id){
-    if (!skipSelf || id != _ownId){
+
+    if (id == _playerId) {
+      if (!_moveRequests[_currentFrame] || !_moveRequests[_currentFrame + 1]){
+        _lastServerTick.players[id] = Player.fromJSON(_lastServerTick.players[id]);
+      }
+
+      console.log(id);
+      console.log(_lastServerTick.players[id].length);
+      // _lastServerTick.players[id].length;
+      // Player.fromJSON(_lastServerTick.players[id]);
+    } else {
       _lastServerTick.players[id] = Player.fromJSON(_lastServerTick.players[id]);
     }
+
+    // Player.fromJSON(_lastServerTick.players[id]);
+
   })
 };
 
 GameStore.updateScreen = function(){
-
-  GameStore.delMoveRequest(_currentFrame);
+  GameStore.delMoveRequest(_currentFrame - 1);
   _currentFrame += 1;
-  if (GameStore.moveRequest(_currentFrame)) {
-    var req = GameStore.moveRequest(_currentFrame);
-    Actions.requestDirChange(req.frame, req.dir, req.snake);
-  };
-
   GameStore.setNewTimeout();
   GameStore.__emitChange();
 };

@@ -82,30 +82,35 @@ var Board = React.createClass({
     var frame = this.state.currentFrame;
     var player = this.ownPlayer();
 
+    var reqSnake = player.snakeAtFrame(frame);
+
     // all of this logic just to make sure a player doesn't turn
     // into itself, and that when you press 2 keys rapidly,
     // you can make the first move on the current frame
     // and the second move on the next one
+
     if (!GameStore.moveRequest(frame)) {
       if (this.eligibleMove(player.dir, reqDir)) {
-        GameStore.setMoveRequest(frame, reqDir, player.snake);
-        Actions.requestDirChange(frame, reqDir, player.snake);
-      }
-    } else if (!GameStore.moveRequest(frame + 1)) {
 
+        GameStore.setMoveRequest(frame, reqDir, reqSnake);
+        Actions.requestDirChange(frame, reqDir, reqSnake);
+
+      }
+
+    } else if (!GameStore.moveRequest(frame + 1)) {
       if (this.eligibleMove(GameStore.moveRequest(frame).dir, reqDir)) {
 
-        var newHead = MathUtil.posSum(
-          player.snake[0],
+        reqSnake.unshift( MathUtil.posSum(
+          reqSnake[0],
           CONSTANTS.DIRS[GameStore.moveRequest(frame).dir]
-        );
+        ));
 
-        // construct a proposed future snake that reflects
-        // the result of the currently requested move
-        var newSnake = [newHead].concat(player.snake);
-        if (newSnake.length > 10) { newSnake = newSnake.slice(0, -1); }
+        if (reqSnake.length > player.length) { reqSnake.pop(); }
 
-        GameStore.setMoveRequest(frame + 1, reqDir, newSnake);
+        debugger;
+
+        // GameStore.setMoveRequest(frame + 1, reqDir, reqSnake);
+        // Actions.requestDirChange(frame + 1, reqDir, reqSnake);
 
       }
 
@@ -140,34 +145,35 @@ var Board = React.createClass({
   },
 
   positions: function() {
+
+    if (!this.state.gameState) { return; }
     var positions = {}
     var segId;
+    var framesOffset;
+    var tempSnake;
 
-    if (this.state.gameState) {
-      Object.keys(this.state.gameState.players).forEach(function(id){
-        this.state.gameState.players[id].snake.forEach(function(seg){
-          segId = '' + seg[0] + ',' + seg[1];
+    Object.keys(this.state.gameState.apples).forEach(function(pos){
+      positions[pos] = CONSTANTS.CELL_TYPES.APPLE;
+    });
 
-          if (id == this.state.ownId) {
-            positions[segId] = CONSTANTS.CELL_TYPES.OWN_SNAKE;
-          } else {
-            positions[segId] = CONSTANTS.CELL_TYPES.OTHER_SNAKE;
-          }
+    Object.keys(this.state.gameState.players).forEach(function(id){
+
+      tempSnake =
+        this.state.gameState.players[id]
+        .snakeAtFrame(this.state.gameState.frameNumber)
+
+      tempSnake.forEach(function(seg){
+        segId = '' + seg[0] + ',' + seg[1];
+
+        if (id == this.state.ownId) {
+          positions[segId] = CONSTANTS.CELL_TYPES.OWN_SNAKE;
+        } else {
+          positions[segId] = CONSTANTS.CELL_TYPES.OTHER_SNAKE;
+        }
 
 
-        }.bind(this) );
       }.bind(this) );
-
-
-      if (this.state.gameState.apples) {
-        this.state.gameState.apples.forEach(function(apple){
-          segId = '' + apple[0] + ',' + apple[1];
-
-          positions[segId] = CONSTANTS.CELL_TYPES.APPLE;
-
-        })
-      }
-    }
+    }.bind(this) );
 
     return positions;
   },
@@ -216,6 +222,11 @@ var Board = React.createClass({
   },
 
   render: function() {
+
+
+    if (!this.state.gameState) { return <div/> }
+
+    // debugger;
 
     return (
       <div id='board-main'

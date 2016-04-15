@@ -10,30 +10,29 @@ var _frameNumber = 0;
 var _lastFrameTime;
 var _redisClient, _io;
 
-var apples = [];
+var apples = {};
 var appleCount = 5;
 
 for (var i = 0; i < appleCount; i++) {
-  apples.push([
-    MathUtil.random(CONSTANTS.BOARD.HEIGHT),
-    MathUtil.random(CONSTANTS.BOARD.WIDTH)
-  ]);
-}
+
+  var randomPos = MathUtil.randomPos(
+    CONSTANTS.BOARD.HEIGHT,
+    CONSTANTS.BOARD.WIDTH
+  )
+
+  apples['' + randomPos[0] + ',' + randomPos[1]] = true;
+
+};
 
 exports.tick = function() {
-
-  if (apples.length < appleCount) {
-    apples.push([
-      MathUtil.random(CONSTANTS.BOARD.HEIGHT),
-      MathUtil.random(CONSTANTS.BOARD.WIDTH)
-    ]);
-  }
 
   updateTime();
 
   _redisClient.hgetall('players', function(err, players){
     if (!err){
-      exports.advanceGameState(players);
+
+      exports.checkCurrentGameState(players, apples, _frameNumber);
+
       _io.emit(CONSTANTS.ACTIONS.SERVER_TICK,
         {
           players: players,
@@ -45,27 +44,39 @@ exports.tick = function() {
   });
 };
 
-exports.advanceGameState = function(players) {
-  if (!players) { return; }
+exports.checkCurrentGameState = function(players, apples, frame) {
 
-  var currentPlayer;
+  if (!players) {return; }
+
+  var head;
 
   Object.keys(players).forEach(function(player){
     currentPlayer = Player.fromJSON(players[player]);
-    currentPlayer.tick(apples, exports.resetApple);
-    _redisClient.hset('players', player, currentPlayer.json());
+
+    if (currentPlayer.length){
+
+      head = currentPlayer.snakeHeadAtFrame(frame);
+      if (head && apples['' + head[0] + ',' + head[1]]) {
+        currentPlayer.length += 1;
+        delete apples['' + head[0] + ',' + head[1]];
+        var newPos = MathUtil.randomPosStr(
+          CONSTANTS.BOARD.HEIGHT,
+          CONSTANTS.BOARD.WIDTH
+        );
+
+        console.log(newPos);
+
+        apples[newPos] = true;
+
+        _redisClient.hset('players', player, currentPlayer.json() );
+
+      }
+
+    }
+
   });
 
-};
-
-exports.resetApple = function(idx) {
-
-  apples[idx] = [
-    MathUtil.random(CONSTANTS.BOARD.HEIGHT),
-    MathUtil.random(CONSTANTS.BOARD.WIDTH)
-  ];
-
-};
+}
 
 exports.start = function(redisClient, io) {
   _redisClient = redisClient;
@@ -81,4 +92,6 @@ exports.stop = function() {
 var updateTime = function() {
   _frameNumber += 1;
   _lastFrameTime = new Date();
+  _redisClient.hset('time', 'frameNumber', _frameNumber );
+  _redisClient.hset('time', 'lastFrameTime', _lastFrameTime );
 };
