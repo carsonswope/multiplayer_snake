@@ -70,7 +70,8 @@ GameStore.receiveServerTick = function(serverGameState, ownId){
 GameStore.ownIdAndWantToOverride = function(id) {
   return (id == _playerId &&
           (_moveRequests[_currentFrame] ||
-           _moveRequests[_currentFrame + 1]));
+           _moveRequests[_currentFrame + 1] ||
+           _moveRequests[_currentFrame - 1]));
 }
 
 GameStore.initiateUpdateLoopIfNecessary = function(){
@@ -117,7 +118,7 @@ GameStore.parseLastServerTick = function(){
 };
 
 GameStore.updateScreen = function(){
-  GameStore.delMoveRequest(_currentFrame - 1);
+  GameStore.delMoveRequest(_currentFrame - 2);
   _currentFrame += 1;
   GameStore.setNewTimeout();
   GameStore.__emitChange();
