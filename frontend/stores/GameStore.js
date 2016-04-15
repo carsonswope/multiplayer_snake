@@ -9,7 +9,12 @@ var _time, _newTime, _dT, _dTAvg;
 var _dTList = [];
 var _dTSum = 0;
 var _currentFrame;
-var _currentState;
+var _currentState = {
+  players: {},
+  apples: {},
+  arrivalTime: new Date(),
+  frameNumber: 0
+};
 
 var _moveRequests = {};
 var _playerId;
@@ -35,14 +40,19 @@ GameStore.ownPlayer = function() {
 }
 GameStore.moveRequest = function(frame) { return _moveRequests[frame]; }
 GameStore.delMoveRequest = function(frame) { delete _moveRequests[frame]; }
-GameStore.setMoveRequest = function(frame, dir, snake) { _moveRequests[frame] = {dir: dir, snake: snake}; }
+GameStore.setMoveRequest = function(frame, dir, snake) {
+  _moveRequests[frame] = {dir: dir, snake: snake};
+
+  GameStore.ownPlayer().snake = snake;
+  GameStore.ownPlayer().dir = dir;
+  GameStore.ownPlayer().frame = frame;
+
+}
 
 GameStore.receiveServerTick = function(serverGameState, ownId){
 
   if (!_playerId) { _playerId = ownId; }
 
-  // if the server update we get is newer than the most recent one,
-  // reset last server tick to that
   if (!_lastServerTick || _lastServerTick.frameNumber < serverGameState.frameNumber ) {
 
     _lastServerTick = serverGameState;
@@ -56,6 +66,12 @@ GameStore.receiveServerTick = function(serverGameState, ownId){
   GameStore.initiateUpdateLoopIfNecessary()
 
 };
+
+GameStore.ownIdAndWantToOverride = function(id) {
+  return (id == _playerId &&
+          (_moveRequests[_currentFrame] ||
+           _moveRequests[_currentFrame + 1]));
+}
 
 GameStore.initiateUpdateLoopIfNecessary = function(){
 
@@ -82,20 +98,20 @@ GameStore.parseLastServerTick = function(){
 
   Object.keys(_lastServerTick.players).forEach(function(id){
 
-    if (id == _playerId) {
-      if (!_moveRequests[_currentFrame] || !_moveRequests[_currentFrame + 1]){
-        _lastServerTick.players[id] = Player.fromJSON(_lastServerTick.players[id]);
-      }
+    // if the id is our own id, and we made a move
+    // recently, we ignore where the server says we
+    // should be and instead just copy our state as
+    // we have calculated it into the last server
+    // tick
 
-      console.log(id);
-      console.log(_lastServerTick.players[id].length);
-      // _lastServerTick.players[id].length;
-      // Player.fromJSON(_lastServerTick.players[id]);
+    if (GameStore.ownIdAndWantToOverride(id)) {
+
+      _lastServerTick.players[id] = GameStore.ownPlayer();
+
     } else {
       _lastServerTick.players[id] = Player.fromJSON(_lastServerTick.players[id]);
     }
 
-    // Player.fromJSON(_lastServerTick.players[id]);
 
   })
 };
@@ -105,16 +121,6 @@ GameStore.updateScreen = function(){
   _currentFrame += 1;
   GameStore.setNewTimeout();
   GameStore.__emitChange();
-};
-
-// doesn't currently get called - for when we are showing a frame where
-// the server hasn't updated us!
-// useful when player makes a move but it doesn't register right away
-// with the server
-GameStore.guessTick = function(){
-  Object.keys(_currentState.players).forEach(function(player){
-    _currentState.players[player].tick();
-  });
 };
 
 GameStore.setNewTimeout = function(){

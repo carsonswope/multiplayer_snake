@@ -81,7 +81,6 @@ var Board = React.createClass({
     var reqDir = CONSTANTS.KEYS[e.which];
     var frame = this.state.currentFrame;
     var player = this.ownPlayer();
-
     var reqSnake = player.snakeAtFrame(frame);
 
     // all of this logic just to make sure a player doesn't turn
@@ -90,11 +89,10 @@ var Board = React.createClass({
     // and the second move on the next one
 
     if (!GameStore.moveRequest(frame)) {
-      if (this.eligibleMove(player.dir, reqDir)) {
 
+      if (this.eligibleMove(player.dir, reqDir)) {
         GameStore.setMoveRequest(frame, reqDir, reqSnake);
         Actions.requestDirChange(frame, reqDir, reqSnake);
-
       }
 
     } else if (!GameStore.moveRequest(frame + 1)) {
@@ -107,10 +105,8 @@ var Board = React.createClass({
 
         if (reqSnake.length > player.length) { reqSnake.pop(); }
 
-        debugger;
-
-        // GameStore.setMoveRequest(frame + 1, reqDir, reqSnake);
-        // Actions.requestDirChange(frame + 1, reqDir, reqSnake);
+        GameStore.setMoveRequest(frame + 1, reqDir, reqSnake);
+        Actions.requestDirChange(frame + 1, reqDir, reqSnake);
 
       }
 
@@ -124,8 +120,6 @@ var Board = React.createClass({
     CONSTANTS.BOARD.HEIGHT
     var height = this.state.size.height - (70 + CONSTANTS.BOARD.HEIGHT * 2);
     var width =  this.state.size.width - (20 + CONSTANTS.BOARD.WIDTH * 2);
-
-
     return { height: height, width: width }
   },
 
@@ -160,7 +154,7 @@ var Board = React.createClass({
 
       tempSnake =
         this.state.gameState.players[id]
-        .snakeAtFrame(this.state.gameState.frameNumber)
+        .snakeAtFrame(GameStore.currentFrame());
 
       tempSnake.forEach(function(seg){
         segId = '' + seg[0] + ',' + seg[1];
@@ -185,13 +179,6 @@ var Board = React.createClass({
 
     var rows = [];
     var cellId, cellClass;
-    // var apple, appleString;
-
-    // if (this.state.gameState && this.state.gameState.apple) {
-    //   apple = this.state.gameState.apple;
-    //   appleString = '' + apple[0] + ',' + apple[1];
-    // }
-
 
     for (var row = 0; row < CONSTANTS.BOARD.HEIGHT; row++) {
       for (var col = 0; col < CONSTANTS.BOARD.WIDTH; col++) {
@@ -211,22 +198,12 @@ var Board = React.createClass({
               height: squareSize
             }}/>
         );
-
       }
-
     }
-
     return rows;
-
-
   },
 
   render: function() {
-
-
-    if (!this.state.gameState) { return <div/> }
-
-    // debugger;
 
     return (
       <div id='board-main'
