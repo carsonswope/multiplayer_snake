@@ -8,17 +8,21 @@ function Player(options){
   this.dir =    options.dir    || undefined;
   this.length = options.length || 2;
   this.frame =  options.frame  || undefined;
+  this.event =  options.event  || undefined;
 };
 
 Player.fromJSON = function(json){
   return new Player(JSON.parse(json));
 };
+
 Player.prototype.json = function(){
   return JSON.stringify(this);
 };
+
 Player.prototype.canPlace = function(){
   return this.state === CONSTANTS.PLAYER_STATES.DEAD;
 };
+
 Player.prototype.place = function(newPos, frame){
   this.snake = [newPos];
   this.state = CONSTANTS.PLAYER_STATES.PLACED;

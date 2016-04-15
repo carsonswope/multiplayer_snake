@@ -29,7 +29,6 @@ GameStore.__onDispatch = function(payload) {
       GameStore.updateScreen();
       break;
   }
-
 };
 
 GameStore.currentFrame = function(){ return _currentFrame; }
@@ -68,6 +67,12 @@ GameStore.receiveServerTick = function(serverGameState, ownId){
 };
 
 GameStore.ownIdAndWantToOverride = function(id) {
+
+  // basically, if the client player has made any
+  // moves within 1 frame of the current frame,
+  // we will override the information from the
+  // server because it might not be updated yet
+
   return (id == _playerId &&
           (_moveRequests[_currentFrame] ||
            _moveRequests[_currentFrame + 1] ||
@@ -106,13 +111,10 @@ GameStore.parseLastServerTick = function(){
     // tick
 
     if (GameStore.ownIdAndWantToOverride(id)) {
-
       _lastServerTick.players[id] = GameStore.ownPlayer();
-
     } else {
       _lastServerTick.players[id] = Player.fromJSON(_lastServerTick.players[id]);
     }
-
 
   })
 };

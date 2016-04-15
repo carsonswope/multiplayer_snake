@@ -146,9 +146,17 @@ var Board = React.createClass({
     var framesOffset;
     var tempSnake;
 
+    // currentGame.allPositions[position] = undefined || playerID || 'APPLE'
+    // currentGame.players[id] = [[0,1], [0,2], [0,3]...]
+    this.currentGame = {
+      allPositions: {},
+      players: {}
+    }
+
     Object.keys(this.state.gameState.apples).forEach(function(pos){
       positions[pos] = CONSTANTS.CELL_TYPES.APPLE;
-    });
+      this.currentGame.allPositions[pos] = 'APPLE';
+    }.bind(this));
 
     Object.keys(this.state.gameState.players).forEach(function(id){
 
@@ -164,8 +172,12 @@ var Board = React.createClass({
         this.state.gameState.players[id]
         .snakeAtFrame(showFrame);
 
+        this.currentGame.players[id] = tempSnake;
+
       tempSnake.forEach(function(seg){
         segId = '' + seg[0] + ',' + seg[1];
+
+        this.currentGame.allPositions[segId] = id;
 
         if (id == this.state.ownId) {
           positions[segId] = CONSTANTS.CELL_TYPES.OWN_SNAKE;
@@ -180,9 +192,16 @@ var Board = React.createClass({
     return positions;
   },
 
+  checkOwnEvents: function() {
+
+    debugger;
+
+  },
+
   cells: function() {
 
     var positions = this.positions();
+    this.checkOwnEvents();
     var squareSize = this.squareSize();
 
     var rows = [];
