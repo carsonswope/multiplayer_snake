@@ -50,27 +50,78 @@ exports.checkCurrentGameState = function(players, apples, frame) {
 
   var head;
 
+  var allPositions = {};
+
+  Object.keys(players).forEach(function(player){
+    currentPlayer = Player.fromJSON(players[player]);
+    snake = currentPlayer.snakeAtFrame(frame);
+    snake.slice(1).forEach(function(seg){
+      segStr = '' + seg[0] + ',' + seg[1];
+      allPositions[segStr] = player;
+    });
+  })
+
   Object.keys(players).forEach(function(player){
     currentPlayer = Player.fromJSON(players[player]);
 
     if (currentPlayer.length){
 
+      if (currentPlayer.action == 'DIE') {
+        currentPlayer.dir = undefined;
+        // currentPlayer.length = 2;
+        // console.log('reset');
+        // currentPlayer.snake = [];
+        // currentPlayer.snake = currentPlayer.snakeAtFrame(frame + 2);
+        currentPlayer.state = CONSTANTS.PLAYER_STATES.DEAD;
+      }
+
+      currentPlayer.action = undefined;
+
       head = currentPlayer.snakeHeadAtFrame(frame);
-      if (head && apples['' + head[0] + ',' + head[1]]) {
-        currentPlayer.length += 1;
-        delete apples['' + head[0] + ',' + head[1]];
-        var newPos = MathUtil.randomPosStr(
-          CONSTANTS.BOARD.HEIGHT,
-          CONSTANTS.BOARD.WIDTH
-        );
 
-        console.log(newPos);
+      if (head) {
+        headStr = '' + head[0] + ',' + head[1];
 
-        apples[newPos] = true;
 
-        _redisClient.hset('players', player, currentPlayer.json() );
+
+        if (apples[headStr]) {
+          currentPlayer.length += 1;
+
+          currentPlayer.action = 'GROW';
+
+          delete apples[headStr];
+          var newPos = MathUtil.randomPosStr(
+            CONSTANTS.BOARD.HEIGHT,
+            CONSTANTS.BOARD.WIDTH
+          );
+
+          apples[newPos] = true;
+
+
+        }
+
+        if (allPositions[headStr]) {
+          currentPlayer.action = 'DIE';
+          currentPlayer.dir = undefined;
+          currentPlayer.snake = currentPlayer.snakeAtFrame(frame)
+          currentPlayer.state = CONSTANTS.PLAYER_STATES.DEAD;
+          // currentPlayer.state = CONSTANTS.PLAYER_STATES.DEAD;
+
+        } else if (head[0] < 0 || head[0] >= CONSTANTS.BOARD.HEIGHT ||
+                   head[1] < 0 || head[1] >= CONSTANTS.BOARD.WIDTH){
+          currentPlayer.action = 'DIE';
+          currentPlayer.dir = undefined;
+          currentPlayer.snake = currentPlayer.snakeAtFrame(frame)
+          currentPlayer.state = CONSTANTS.PLAYER_STATES.DEAD;
+          // currentPlayer.state = CONSTANTS.PLAYER_STATES.DEAD;
+
+
+        }
 
       }
+
+      _redisClient.hset('players', player, currentPlayer.json() );
+
 
     }
 

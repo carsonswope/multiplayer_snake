@@ -54,6 +54,7 @@ var Board = React.createClass({
   },
 
   handleClick: function(e) {
+
     if (this.ownPlayerState() == CONSTANTS.PLAYER_STATES.DEAD){
       var requestedSpawnLocation =
         e.target.id.split(',').map(function(coord){
@@ -146,16 +147,26 @@ var Board = React.createClass({
     var framesOffset;
     var tempSnake;
 
-    // currentGame.allPositions[position] = undefined || playerID || 'APPLE'
-    // currentGame.players[id] = [[0,1], [0,2], [0,3]...]
+    // currentGame.allPositions[position] = undefined || [player1ID, player2ID] || ['APPLE']
+    // currentGame.players[id] =
+    //   {
+    //     snake:  [[0,1], [0,2], [0,3]...],
+    //     action: 'DIE' || 'GROW' || 'UNDEFINED'
+    //   }
+
+
     this.currentGame = {
       allPositions: {},
-      players: {}
+      players: {
+      }
     }
 
     Object.keys(this.state.gameState.apples).forEach(function(pos){
       positions[pos] = CONSTANTS.CELL_TYPES.APPLE;
-      this.currentGame.allPositions[pos] = 'APPLE';
+      if (!this.currentGame.allPositions[pos]) {
+        this.currentGame.allPositions[pos] = [];
+      }
+      this.currentGame.allPositions[pos].push('APPLE');
     }.bind(this));
 
     Object.keys(this.state.gameState.players).forEach(function(id){
@@ -172,12 +183,18 @@ var Board = React.createClass({
         this.state.gameState.players[id]
         .snakeAtFrame(showFrame);
 
-        this.currentGame.players[id] = tempSnake;
+      this.currentGame.players[id] = {
+        snake: tempSnake,
+        action: this.state.gameState.players[id].action
+      }
 
       tempSnake.forEach(function(seg){
         segId = '' + seg[0] + ',' + seg[1];
 
-        this.currentGame.allPositions[segId] = id;
+        if (!this.currentGame.allPositions[segId]) {
+          this.currentGame.allPositions[segId] = [];
+        }
+        this.currentGame.allPositions[segId].push(id);
 
         if (id == this.state.ownId) {
           positions[segId] = CONSTANTS.CELL_TYPES.OWN_SNAKE;
@@ -194,7 +211,40 @@ var Board = React.createClass({
 
   checkOwnEvents: function() {
 
-    debugger;
+    if (this.currentGame.players &&
+        this.currentGame.players[GameStore.ownId()]) {
+
+      var player = this.currentGame.players[GameStore.ownId()];
+
+      if (player.snake.length) {
+        var head = player.snake[0];
+        var headStr = '' + head[0] + ',' + head[1];
+
+        var snakeElementCount = 0;
+
+        if (this.currentGame.allPositions[headStr].length > 1) {
+          this.currentGame.allPositions[headStr].forEach(function(occupant){
+            if (occupant == 'APPLE') {
+              player.action = 'GROW';
+            } else {
+              snakeElementCount += 1;
+            }
+          }.bind(this) );
+        }
+        if (snakeElementCount > 1) { player.action = 'DIE';}
+
+        if (head[0] < 0 || head[0] >= CONSTANTS.BOARD.HEIGHT ||
+                   head[1] < 0 || head[1] >= CONSTANTS.BOARD.WIDTH) {
+          player.action = 'DIE';
+        }
+      }
+
+      if (player.action == 'DIE') {
+        GameStore.slayPlayer();
+      }
+
+    }
+
 
   },
 

@@ -1,14 +1,14 @@
 var MathUtil = require('./MathUtil');
 
 function Player(options){
-  this.id =     options.id     || id;
-  this.name =   options.name   || undefined;
-  this.snake =  options.snake  || [];
-  this.state =  options.state  || CONSTANTS.PLAYER_STATES.DEAD;
-  this.dir =    options.dir    || undefined;
-  this.length = options.length || 2;
-  this.frame =  options.frame  || undefined;
-  this.event =  options.event  || undefined;
+  this.id =     options.id      || id;
+  this.name =   options.name    || undefined;
+  this.snake =  options.snake   || [];
+  this.state =  options.state   || CONSTANTS.PLAYER_STATES.DEAD;
+  this.dir =    options.dir     || undefined;
+  this.length = options.length  || 10;
+  this.frame =  options.frame   || undefined;
+  this.action =  options.action || undefined;
 };
 
 Player.fromJSON = function(json){
@@ -61,6 +61,7 @@ Player.prototype.snakeAtFrame = function(frame){
     }
 
   } else {
+
 
     var tailDir = MathUtil.posDif(
       tempSnake[tempSnake.length - 2 ],

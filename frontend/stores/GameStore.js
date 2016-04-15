@@ -48,6 +48,19 @@ GameStore.setMoveRequest = function(frame, dir, snake) {
 
 }
 
+GameStore.slayPlayer = function() {
+  _currentFrame;
+  var p = GameStore.ownPlayer();
+
+  var snake = p.snakeAtFrame(_currentFrame - 1);
+  p.snake = snake;
+  p.dir = undefined;
+  p.state = CONSTANTS.PLAYER_STATES.DEAD;
+  _moveRequests[_currentFrame] = true;
+  Actions.requestDirChange(_currentFrame, p.dir, p.snake);
+
+};
+
 GameStore.receiveServerTick = function(serverGameState, ownId){
 
   if (!_playerId) { _playerId = ownId; }
