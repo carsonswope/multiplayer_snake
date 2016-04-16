@@ -3,6 +3,8 @@ var PropTypes = React.PropTypes;
 
 var Actions = require('../actions');
 
+var Renderer = require('./Renderer');
+
 var MathUtil = require('../../util/MathUtil');
 
 var WindowStore = require('../stores/WindowStore');
@@ -11,6 +13,8 @@ var GameStore = require('../stores/GameStore');
 var Board = React.createClass({
 
   getInitialState: function() {
+
+    this.daGame = {};
 
     return ({
        size: WindowStore.size(),
@@ -23,6 +27,21 @@ var Board = React.createClass({
     this.windowListener = WindowStore.addListener(this.resizeWindow);
     this.gameListener = GameStore.addListener(this.gameUpdate);
     window.addEventListener('keydown', this.handleKey);
+
+    this.setupCanvas();
+  },
+
+  setupCanvas: function() {
+
+    console.log('setup1');
+
+    this.canvas = this.refs.gameCanvas;
+    this.canvas.width = this.state.size.width;
+    this.canvas.height = this.state.size.height;
+    this.canvasRect = this.canvas.getBoundingClientRect();
+    this.canvasContext= this.canvas.getContext('2d');
+    this.renderer = new Renderer(this.canvasContext);
+
   },
 
   componentWillUnmount: function() {
@@ -142,12 +161,15 @@ var Board = React.createClass({
 
     var currentGame = {
       allPositions: {},
-      players: {}
+      players: {},
+      apples: {}
     }
 
     Object.keys(this.state.gameState.apples).forEach(function(pos){
       currentGame.allPositions[pos] = currentGame.allPositions[pos] || [];
       currentGame.allPositions[pos].push('APPLE');
+
+      currentGame.apples[pos] = true;
     }.bind(this));
 
     Object.keys(this.state.gameState.players).forEach(function(id){
@@ -227,6 +249,9 @@ var Board = React.createClass({
 
     var currentGame = this.calculateBoard();
     this.checkOwnEvents(currentGame);
+
+    this.daGame = currentGame;
+
     var squareSize = this.squareSize();
 
     var els;
@@ -268,6 +293,18 @@ var Board = React.createClass({
   },
 
   render: function() {
+
+    if (this.renderer) {
+      this.cells();
+      this.renderer.giveCurrentFrame(this.daGame);
+      this.renderer.scheduleNextFrame(GameStore.nextFrameTime());
+    }
+
+    return (
+      <canvas
+        ref='gameCanvas'>
+      </canvas>
+    );
 
     return (
       <div id='board-main'

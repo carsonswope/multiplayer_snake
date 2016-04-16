@@ -19,6 +19,7 @@ var _currentState = {
 var _moveRequests = {};
 var _playerId;
 var GameStore = new Store(Dispatcher);
+var _nextFrameTime;
 
 GameStore.__onDispatch = function(payload) {
   switch (payload.actionType) {
@@ -31,6 +32,7 @@ GameStore.__onDispatch = function(payload) {
   }
 };
 
+GameStore.nextFrameTime = function(){ return _nextFrameTime; }
 GameStore.currentFrame = function(){ return _currentFrame; }
 GameStore.currentState = function(){ return _currentState; }
 GameStore.ownId = function() { return _playerId; }
@@ -152,6 +154,8 @@ GameStore.setNewTimeout = function(){
   // gives us the timeout length we wants
   var expectedArrivalTime = _lastServerTick.arrivalTime.getTime() + (i * _dTAvg);
   var newUpdateTime = expectedArrivalTime + CONSTANTS.MS_AFTER_EXPECTED_SERVER_UPDATE_ARRIVAL_TO_UPDATE_SCREEN;
+
+  _nextFrameTime = newUpdateTime;
 
   setTimeout(Actions.updateScreen, newUpdateTime - new Date());
 
