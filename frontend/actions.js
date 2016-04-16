@@ -46,3 +46,12 @@ exports.requestDirChange = function(frame, dir, snake){
 
   _socket.emit(CONSTANTS.PLAYER_MOVES.SET_DIRECTION, params);
 }
+
+exports.declareDeath = function(frame, snake){
+  var params = {
+    frame: frame,
+    snake: snake
+  }
+
+  _socket.emit(CONSTANTS.PLAYER_MOVES.DECLARE_DEATH, params);
+}

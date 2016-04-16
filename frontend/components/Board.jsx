@@ -65,12 +65,8 @@ var Board = React.createClass({
   },
 
   eligibleMove: function(currentDir, testDir) {
-
-    return (
-      currentDir != testDir &&
-      CONSTANTS.OPPOSITE_DIRS[currentDir] != testDir
-    )
-
+    return  currentDir != testDir &&
+            CONSTANTS.OPPOSITE_DIRS[currentDir] != testDir;
   },
 
   handleKey: function(e) {
@@ -108,12 +104,8 @@ var Board = React.createClass({
 
         GameStore.setMoveRequest(frame + 1, reqDir, reqSnake);
         Actions.requestDirChange(frame + 1, reqDir, reqSnake);
-
       }
-
     }
-
-
   },
 
   boardDims: function() {
@@ -139,121 +131,105 @@ var Board = React.createClass({
 
   },
 
-  positions: function() {
+  calculateBoard: function() {
 
     if (!this.state.gameState) { return; }
-    var positions = {}
+
     var segId;
     var framesOffset;
     var tempSnake;
+    var showFrame;
 
-    // currentGame.allPositions[position] = undefined || [player1ID, player2ID] || ['APPLE']
-    // currentGame.players[id] =
-    //   {
-    //     snake:  [[0,1], [0,2], [0,3]...],
-    //     action: 'DIE' || 'GROW' || 'UNDEFINED'
-    //   }
-
-
-    this.currentGame = {
+    var currentGame = {
       allPositions: {},
-      players: {
-      }
+      players: {}
     }
 
     Object.keys(this.state.gameState.apples).forEach(function(pos){
-      positions[pos] = CONSTANTS.CELL_TYPES.APPLE;
-      if (!this.currentGame.allPositions[pos]) {
-        this.currentGame.allPositions[pos] = [];
-      }
-      this.currentGame.allPositions[pos].push('APPLE');
+      currentGame.allPositions[pos] = currentGame.allPositions[pos] || [];
+      currentGame.allPositions[pos].push('APPLE');
     }.bind(this));
 
     Object.keys(this.state.gameState.players).forEach(function(id){
 
-      var showFrame;
-
-      if (id == this.state.ownId) {
-        showFrame = GameStore.currentFrame();
-      } else {
-        showFrame = GameStore.currentFrame() - 1;
-      }
+      showFrame = id == this.state.ownId ?
+        GameStore.currentFrame() : GameStore.currentFrame() - 1;
 
       tempSnake =
         this.state.gameState.players[id]
         .snakeAtFrame(showFrame);
 
-      this.currentGame.players[id] = {
+      currentGame.players[id] = {
         snake: tempSnake,
         action: this.state.gameState.players[id].action
       }
 
       tempSnake.forEach(function(seg){
-        segId = '' + seg[0] + ',' + seg[1];
-
-        if (!this.currentGame.allPositions[segId]) {
-          this.currentGame.allPositions[segId] = [];
-        }
-        this.currentGame.allPositions[segId].push(id);
-
-        if (id == this.state.ownId) {
-          positions[segId] = CONSTANTS.CELL_TYPES.OWN_SNAKE;
-        } else {
-          positions[segId] = CONSTANTS.CELL_TYPES.OTHER_SNAKE;
-        }
-
-
+        segId = MathUtil.posStr(seg);
+        currentGame.allPositions[segId] = currentGame.allPositions[segId] || [];
+        currentGame.allPositions[segId].push(id);
       }.bind(this) );
+
     }.bind(this) );
 
-    return positions;
+    return currentGame;
+
   },
 
-  checkOwnEvents: function() {
+  checkOwnEvents: function(currentGame) {
 
-    if (this.currentGame.players &&
-        this.currentGame.players[GameStore.ownId()]) {
+    // if our own player even has an active snake
+    if (currentGame.players &&
+        currentGame.players[GameStore.ownId()] &&
+        currentGame.players[GameStore.ownId()].snake.length) {
 
-      var player = this.currentGame.players[GameStore.ownId()];
+      var player = currentGame.players[GameStore.ownId()];
+      var head = player.snake[0];
+      var headStr = MathUtil.posStr(head);
+      var snakeElementCount = 0;
 
-      if (player.snake.length) {
-        var head = player.snake[0];
-        var headStr = '' + head[0] + ',' + head[1];
+      // if there is at least one other element which claims
+      // the same location as our head claims
+      if (currentGame.allPositions[headStr].length > 1) {
 
-        var snakeElementCount = 0;
-
-        if (this.currentGame.allPositions[headStr].length > 1) {
-          this.currentGame.allPositions[headStr].forEach(function(occupant){
-            if (occupant == 'APPLE') {
-              player.action = 'GROW';
-            } else {
-              snakeElementCount += 1;
-            }
-          }.bind(this) );
-        }
-        if (snakeElementCount > 1) { player.action = 'DIE';}
-
-        if (head[0] < 0 || head[0] >= CONSTANTS.BOARD.HEIGHT ||
-                   head[1] < 0 || head[1] >= CONSTANTS.BOARD.WIDTH) {
-          player.action = 'DIE';
-        }
+        // see what those occupants are, actions accordingly
+        currentGame.allPositions[headStr].forEach(function(occupant){
+          if (occupant == 'APPLE') {
+            player.action = 'GROW';
+          } else {
+            snakeElementCount += 1;
+          }
+        }.bind(this) );
       }
 
+      if (MathUtil.outOfBounds(head) || snakeElementCount > 1) { player.action = 'DIE'; }
+
+      // if it turns out we are dead,
+      // rewind our snake one frame so it looks like
+      // we have stopped at the moment of death
+      // and then tell the server about it (with GameStore.slayPlayer())
       if (player.action == 'DIE') {
+        var snakeAtDeath = this.state.gameState.players[GameStore.ownId()]
+                .snakeAtFrame(GameStore.currentFrame() - 1);
+        var snakeTailAtDeath = snakeAtDeath[snakeAtDeath.length - 1];
+        var snakeTailStr = '' + snakeTailAtDeath[0] + ',' + snakeTailAtDeath[1];
+        currentGame.allPositions[snakeTailStr] = currentGame.allPositions[snakeTailStr] || [];
+        currentGame.allPositions[snakeTailStr].push(GameStore.ownId());
         GameStore.slayPlayer();
       }
-
     }
-
-
   },
 
   cells: function() {
 
-    var positions = this.positions();
-    this.checkOwnEvents();
+    // my primitive rendering mechanism.
+    // to be replaced with canvas, or something...
+
+    var currentGame = this.calculateBoard();
+    this.checkOwnEvents(currentGame);
     var squareSize = this.squareSize();
 
+    var els;
     var rows = [];
     var cellId, cellClass;
 
@@ -262,9 +238,20 @@ var Board = React.createClass({
         cellId = '' + row + ',' + col;
         cellClass = 'cell';
 
-        if (positions[cellId]) {
-          cellClass += CONSTANTS.CELL_STYLES[positions[cellId]];
-        };
+        els = currentGame.allPositions[cellId];
+
+        if (els && els.length) {
+          els.forEach(function(el) {
+
+            if (el == 'APPLE' && !(cellClass.length > 4)) {
+              cellClass += ' apple';
+            } else if (el == GameStore.ownId()){
+              cellClass = 'cell own-snake';
+            } else {
+              cellClass = 'cell other-snake';
+            }
+          });
+        }
 
         rows.push(
           <div id={cellId}

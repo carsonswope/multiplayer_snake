@@ -17,17 +17,19 @@ exports.setupSocketEvents = function(socket){
     CONSTANTS.PLAYER_MOVES.SET_DIRECTION,
     setDirection.bind(global, socket));
 
+  socket.on(
+    CONSTANTS.PLAYER_MOVES.DECLARE_DEATH,
+    killPlayer.bind(global, socket));
+
 };
 
 function connectUser(socket){
   var newPlayer = new Player({id: socket.id});
   redis.hset('players', socket.id, newPlayer.json() );
-  console.log('user ' + socket.id + ' connected');
 }
 
 function disconnectUser(socket){
   redis.hdel('players', socket.id );
-  console.log('user ' + socket.id + ' disconnected');
 };
 
 function setStartingPos(socket, pos){
@@ -54,6 +56,16 @@ function setDirection(socket, data){
           redis.hset('players', socket.id, player.json());
         }
       })
+    }
+  });
+};
+
+function killPlayer(socket, data){
+  redis.hget('players', socket.id, function(error, playerData){
+    if (!error) {
+      var player = Player.fromJSON(playerData);
+      player.die(data);
+      redis.hset('players', socket.id, player.json());
     }
   });
 };

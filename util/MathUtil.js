@@ -1,3 +1,5 @@
+var CONSTANTS = require('../constants');
+
 exports.stepsAway = function(pos1, pos2) {
   return Math.abs(pos1[0] - pos2[0]) + Math.abs(pos1[1] - pos2[1]);
 };
@@ -22,13 +24,16 @@ exports.randomPos = function(rows, cols) {
   ]);
 }
 
-exports.randomPosStr = function(rows, cols) {
+exports.randomPosStr = function() {
 
-  return exports.posToStr(exports.randomPos(rows,cols));
+  return exports.posStr(
+    exports.randomPos(
+      CONSTANTS.BOARD.HEIGHT,
+      CONSTANTS.BOARD.WIDTH
+    ));
+};
 
-}
-
-exports.posToStr = function(pos) {
+exports.posStr = function(pos) {
 
   return '' + pos[0] + ',' + pos[1];
 }
@@ -38,3 +43,8 @@ exports.posDif = function(pos1, pos2) {
     pos2[0] - pos1[0], pos2[1] - pos1[1]
   ]);
 };
+
+exports.outOfBounds = function(pos) {
+  return pos[0] < 0 || pos[0] >= CONSTANTS.BOARD.HEIGHT ||
+         pos[1] < 0 || pos[1] >= CONSTANTS.BOARD.WIDTH;
+}
