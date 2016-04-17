@@ -3,26 +3,32 @@ var SnakeBodyStraight = require('./SnakeBodyStraight');
 function SnakeComponent(positions, screenSize) {
 
   this.size = screenSize;
-
-  this.screenSize = screenSize;
-
   this.bodySegments = [];
 
 }
 
 SnakeComponent.prototype.update = function(newSnake) {
 
+  if (newSnake.action == 'GROW') {
+
+  } else if (newSnake.action == 'DIE') {
+
+  }
+
   this.bodySegments = [];
 
   newSnake.snake.forEach(function(seg){
     this.bodySegments.push(
-      new SnakeBodyStraight(seg, this.screenSize)
+      new SnakeBodyStraight(seg, this.size)
     )
   }.bind(this));
 };
 
-SnakeComponent.prototype.draw = function(ctx) {
+SnakeComponent.prototype.resize = function (newSize) {
+  this.size = newSize;
+};
 
+SnakeComponent.prototype.draw = function(ctx) {
   this.bodySegments.forEach(function(seg){
     seg.draw(ctx);
   });

@@ -6,36 +6,26 @@ var Snake = require('./graphics/SnakeComponent');
 var BoardComponent = require('./graphics/BoardComponent');
 
 function Renderer(context, screenSize) {
-
   this.ctx = context
-  this.lastFrameTime;
-  this.nextFrameTime;
-  this.currentFrame;
   this.evenFrame = 0;
   this.startingTime = new Date();
-
   this.size = screenSize;
-
   this.snakes = {};
   this.apples = {};
   this.board = new BoardComponent(this.size);
-
   requestAnimationFrame(this.tick.bind(this))
-
 };
 
 Renderer.prototype.scheduleNextFrame = function(time) {
   this.lastFrameTime = this.nextFrameTime;
   this.nextFrameTime = time;
-
-  // console.log(time);
 };
 
 Renderer.prototype.framePoint = function(){
   var frameP = (new Date() - this.lastFrameTime) / (this.nextFrameTime - this.lastFrameTime);
+
   if (this.lastFrameP > frameP) {
-    this.evenFrame = !this.evenFrame ?
-      1 : 0;
+    this.evenFrame = !this.evenFrame ? 1 : 0;
   }
 
   this.lastFrameP = frameP;
@@ -51,36 +41,37 @@ Renderer.prototype.timePoint = function(interval){
 };
 
 Renderer.prototype.giveCurrentFrame = function(frame) {
-  this.currentFrame = frame;
-  this.updateComponents();
 
-};
-
-Renderer.prototype.updateComponents = function() {
-
-  Object.keys(this.currentFrame.players).forEach(function(id){
+  Object.keys(frame.players).forEach(function(id){
     this.snakes[id] = this.snakes[id] || new Snake(this.snakes[id], this.size);
-    this.snakes[id].update(this.currentFrame.players[id]);
+    this.snakes[id].update(frame.players[id]);
   }.bind(this));
 
-  Object.keys(this.currentFrame.apples).forEach(function(id){
+  Object.keys(frame.apples).forEach(function(id){
     this.apples[id] = new Apple(MathUtil.posParse(id), this.size);
     this.apples[id].updated = true;
   }.bind(this));
 
   Object.keys(this.apples).forEach(function(id){
-    if (this.apples[id].updated){
-      this.apples[id].updated = false;
-    } else {
-      delete this.apples[id];
-    }
+    if (this.apples[id].updated){ this.apples[id].updated = false; }
+    else { delete this.apples[id]; }
   }.bind(this))
 
-}
+};
 
 Renderer.prototype.resize = function(newSize){
   this.size = newSize;
   this.board.resize(newSize);
+
+  Object.keys(this.apples).forEach(function(id){
+    this.apples[id].resize(this.size);
+  }.bind(this));
+
+
+  Object.keys(this.snakes).forEach(function(id){
+    this.snakes[id].resize(this.size);
+  }.bind(this));
+
 };
 
 Renderer.prototype.draw = function(time){

@@ -39,7 +39,7 @@ var Snake = React.createClass({
     this.canvas.height = this.state.size.height;
     this.canvasRect = this.canvas.getBoundingClientRect();
     this.canvasContext= this.canvas.getContext('2d');
-    this.renderer = new Renderer(this.canvasContext, this.state.size);
+    this.renderer = new Renderer(this.canvasContext, WindowStore.size());
   },
 
   componentWillUnmount: function() {
@@ -81,7 +81,7 @@ var Snake = React.createClass({
       [xPos, yPos], this.state.size
     );
 
-    if (!MathUtil.outOfBounds(coords)) {
+    if (!MathUtil.outOfBounds(coords) && this.ownPlayerState() == CONSTANTS.PLAYER_STATES.DEAD) {
       Actions.requestSpawnLocation(coords);
     }
 
@@ -224,6 +224,7 @@ var Snake = React.createClass({
 
         GameStore.slayPlayer();
       }
+
     }
   },
 
