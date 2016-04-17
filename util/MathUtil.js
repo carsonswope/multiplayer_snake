@@ -24,6 +24,13 @@ exports.randomPos = function(rows, cols) {
   ]);
 }
 
+exports.posParse = function(posStr) {
+  return posStr.split(',').map(function(el){
+    return parseInt(el);
+  });
+
+}
+
 exports.randomPosStr = function() {
 
   return exports.posStr(

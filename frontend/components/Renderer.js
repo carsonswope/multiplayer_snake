@@ -1,4 +1,11 @@
-function Renderer(context) {
+var CONSTANTS = require('../../constants');
+var MathUtil = require('../../util/MathUtil');
+
+var Apple = require('./graphics/AppleComponent');
+var Snake = require('./graphics/SnakeComponent');
+var BoardComponent = require('./graphics/BoardComponent');
+
+function Renderer(context, screenSize) {
 
   this.ctx = context
   this.lastFrameTime;
@@ -7,8 +14,11 @@ function Renderer(context) {
   this.evenFrame = 0;
   this.startingTime = new Date();
 
-  this.snakes = [];
-  this.apples = [];
+  this.size = screenSize;
+
+  this.snakes = {};
+  this.apples = {};
+  this.board = new BoardComponent(this.size);
 
   requestAnimationFrame(this.tick.bind(this))
 
@@ -42,37 +52,58 @@ Renderer.prototype.timePoint = function(interval){
 
 Renderer.prototype.giveCurrentFrame = function(frame) {
   this.currentFrame = frame;
+  this.updateComponents();
+
 };
 
 Renderer.prototype.updateComponents = function() {
 
-  this.snakes.forEach(function(snake){
+  Object.keys(this.currentFrame.players).forEach(function(id){
+    this.snakes[id] = this.snakes[id] || new Snake(this.snakes[id], this.size);
+    this.snakes[id].update(this.currentFrame.players[id]);
+  }.bind(this));
 
-    // frame.
+  Object.keys(this.currentFrame.apples).forEach(function(id){
+    this.apples[id] = new Apple(MathUtil.posParse(id), this.size);
+    this.apples[id].updated = true;
+  }.bind(this));
 
-    // snake.passState(frame);
-  })
-
-  this.currentFrame
+  Object.keys(this.apples).forEach(function(id){
+    if (this.apples[id].updated){
+      this.apples[id].updated = false;
+    } else {
+      delete this.apples[id];
+    }
+  }.bind(this))
 
 }
 
+Renderer.prototype.resize = function(newSize){
+  this.size = newSize;
+  this.board.resize(newSize);
+};
+
+Renderer.prototype.draw = function(time){
+
+  var ctx = this.ctx;
+  ctx.clearRect(0, 0, this.size.width, this.size.height);
+  this.board.draw(ctx);
+
+  Object.keys(this.apples).forEach(function(id){
+    this.apples[id].draw(ctx);
+  }.bind(this));
+
+  Object.keys(this.snakes).forEach(function(id){
+    this.snakes[id].draw(ctx);
+  }.bind(this));
+
+};
+
 Renderer.prototype.tick = function(time){
 
-  this.timePoint(1000);
+  this.draw(time);
 
-  console.log(this.timePoint(1000));
-
-  console.log(this.currentFrame);
-
-
-  // console.log(this.currentFrame);
-  // console.log(this.halfFramePoint());
-
-  if (!this.currentFrame) {
-    requestAnimationFrame(this.tick.bind(this))
-
-  }
+  requestAnimationFrame(this.tick.bind(this))
 
 };
 
