@@ -11,7 +11,6 @@ var getScreen = function(screenSize) {
 
 var squareSideLength = function(screenSize) {
 
-
   var screen = getScreen(screenSize);
   return (screen.height / screen.width > rows / cols) ?
     screen.width / cols : screen.height / rows;
@@ -30,13 +29,22 @@ exports.coords = function(pos, screenSize) {
   var screen = getScreen(screenSize);
   var offset = getOffset(screen, squareSize);
 
+  console.log([
+    Math.floor(((pos[1] - (padding + offset[0])) / squareSize)),
+    Math.floor(((pos[0] - (padding + offset[1])) / squareSize))
+  ]);
+
   var realPos = [
-    Math.round(((pos[1] - (padding + offset[0])) / squareSize) - 0.5),
-    Math.round(((pos[0] - (padding + offset[1])) / squareSize) - 0.5)
+    Math.floor(((pos[1] - (padding + offset[0])) / squareSize)),
+    Math.floor(((pos[0] - (padding + offset[1])) / squareSize))
   ]
+
+  debugger
 
   if (realPos[0] == -0 ) { realPos[0] = 0; }
   if (realPos[1] == -0 ) { realPos[1] = 0; }
+
+  // debugger;
 
   return realPos;
 

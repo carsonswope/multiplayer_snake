@@ -74,11 +74,9 @@ var Snake = React.createClass({
 
   handleClick: function(e) {
     e.preventDefault();
-    var xPos = e.clientX - this.canvasRect.left;
-    var yPos = e.clientY - this.canvasRect.top;
 
     var coords = CanvasHelper.coords(
-      [xPos, yPos], this.state.size
+      [e.clientX, e.clientY], {width: this.state.size.width - 8, height: this.state.size.height - 8}
     );
 
     if (!MathUtil.outOfBounds(coords) && this.ownPlayerState() == CONSTANTS.PLAYER_STATES.DEAD) {
@@ -249,8 +247,8 @@ var Snake = React.createClass({
     return (
       <canvas
         style={{
-          width: this.state.size.width - 2,
-          height: this.state.size.height - 5
+          width: this.state.size.width,
+          height: this.state.size.height
         }}
         onClick={this.handleClick}
         ref='gameCanvas'>
