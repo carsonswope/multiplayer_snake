@@ -8,7 +8,7 @@ function SnakeBodyStraight(originalPosition, screenSize) {
 SnakeBodyStraight.inherits(RenderableComponent);
 
 SnakeBodyStraight.prototype.draw = function(ctx) {
-  var pad = 5;
+  var pad = 1;
   var h = (this.squareSize / 2) - (pad / 2);
   var pos = this.screenCoordinates;
   ctx.beginPath();
