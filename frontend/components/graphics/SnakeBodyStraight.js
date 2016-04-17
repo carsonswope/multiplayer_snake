@@ -8,9 +8,6 @@ function SnakeBodyStraight(originalPosition, screenSize) {
 SnakeBodyStraight.inherits(RenderableComponent);
 
 SnakeBodyStraight.prototype.draw = function(ctx) {
-
-  debugger;
-
   var pad = 5;
   var h = (this.squareSize / 2) - (pad / 2);
   var pos = this.screenCoordinates;

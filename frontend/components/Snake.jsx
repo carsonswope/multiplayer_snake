@@ -16,13 +16,14 @@ var Snake = React.createClass({
 
   getInitialState: function() {
 
-    this.daGame = {};
+    this.gameFrame = {};
 
     return ({
        size: WindowStore.size(),
        gameState: GameStore.currentState(),
        ownId: GameStore.ownId()
      });
+
   },
 
   componentDidMount: function() {
@@ -48,13 +49,7 @@ var Snake = React.createClass({
   },
 
   resizeWindow: function() {
-
     var size = WindowStore.size();
-    size = {
-      width: size.width - 3,
-      height: size.height - 3
-    };
-
     this.canvas.width = size.width;
     this.canvas.height = size.height;
     this.renderer.resize(size);
@@ -77,7 +72,7 @@ var Snake = React.createClass({
     if (this.ownPlayer()) { return this.ownPlayer().state; }
   },
 
-  handleCanvasClick: function(e) {
+  handleClick: function(e) {
     e.preventDefault();
     var xPos = e.clientX - this.canvasRect.left;
     var yPos = e.clientY - this.canvasRect.top;
@@ -136,29 +131,6 @@ var Snake = React.createClass({
     }
   },
 
-  boardDims: function() {
-    CONSTANTS.BOARD.WIDTH
-    CONSTANTS.BOARD.HEIGHT
-    var height = this.state.size.height - (70 + CONSTANTS.BOARD.HEIGHT * 2);
-    var width =  this.state.size.width - (20 + CONSTANTS.BOARD.WIDTH * 2);
-    return { height: height, width: width }
-  },
-
-  squareSize: function() {
-
-    var dims = this.boardDims();
-    var squareSize;
-
-    if (dims.height / dims.width > CONSTANTS.BOARD.HEIGHT / CONSTANTS.BOARD.WIDTH) {
-      squareSize = dims.width / CONSTANTS.BOARD.WIDTH;
-    } else {
-      squareSize = dims.height / CONSTANTS.BOARD.HEIGHT;
-    }
-
-    return squareSize;
-
-  },
-
   calculateBoard: function() {
 
     if (!this.state.gameState) { return; }
@@ -210,6 +182,9 @@ var Snake = React.createClass({
   checkOwnEvents: function(currentGame) {
 
     // if our own player even has an active snake
+    // then we see if we can preemptively catch
+    // events (death, growing) that happen to the player
+    // and not rely on the server to inform us
     if (currentGame.players &&
         currentGame.players[GameStore.ownId()] &&
         currentGame.players[GameStore.ownId()].snake.length) {
@@ -225,11 +200,8 @@ var Snake = React.createClass({
 
         // see what those occupants are, actions accordingly
         currentGame.allPositions[headStr].forEach(function(occupant){
-          if (occupant == 'APPLE') {
-            player.action = 'GROW';
-          } else {
-            snakeElementCount += 1;
-          }
+          if (occupant == 'APPLE') { player.action = 'GROW'; }
+          else { snakeElementCount += 1; }
         }.bind(this) );
       }
 
@@ -240,32 +212,38 @@ var Snake = React.createClass({
       // we have stopped at the moment of death
       // and then tell the server about it (with GameStore.slayPlayer())
       if (player.action == 'DIE') {
-        var snakeAtDeath = this.state.gameState.players[GameStore.ownId()]
-                .snakeAtFrame(GameStore.currentFrame() - 1);
+
+        var snakeAtDeath = this.state.gameState.players[GameStore.ownId()].snakeAtFrame(GameStore.currentFrame() - 1);
         var snakeTailAtDeath = snakeAtDeath[snakeAtDeath.length - 1];
         var snakeTailStr = '' + snakeTailAtDeath[0] + ',' + snakeTailAtDeath[1];
+
         currentGame.allPositions[snakeTailStr] = currentGame.allPositions[snakeTailStr] || [];
         currentGame.allPositions[snakeTailStr].push(GameStore.ownId());
+        player.snake.push(snakeTailAtDeath);
+        player.snake.shift();
+
         GameStore.slayPlayer();
       }
     }
   },
 
   assembleFrame: function() {
-
     var currentGame = this.calculateBoard();
     this.checkOwnEvents(currentGame);
-    this.daGame = currentGame;
+    this.gameFrame = currentGame;
+  },
 
+  updateRenderer: function(){
+    if (this.renderer) {
+      this.assembleFrame();
+      this.renderer.giveCurrentFrame(this.gameFrame);
+      this.renderer.scheduleNextFrame(GameStore.nextFrameTime());
+    }
   },
 
   render: function() {
 
-    if (this.renderer) {
-      this.assembleFrame();
-      this.renderer.giveCurrentFrame(this.daGame);
-      this.renderer.scheduleNextFrame(GameStore.nextFrameTime());
-    }
+    this.updateRenderer();
 
     return (
       <canvas
@@ -273,7 +251,7 @@ var Snake = React.createClass({
           width: this.state.size.width - 2,
           height: this.state.size.height - 5
         }}
-        onClick={this.handleCanvasClick}
+        onClick={this.handleClick}
         ref='gameCanvas'>
       </canvas>
     );

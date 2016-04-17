@@ -38,9 +38,7 @@ exports.coords = function(pos, screenSize) {
   if (realPos[0] == -0 ) { realPos[0] = 0; }
   if (realPos[1] == -0 ) { realPos[1] = 0; }
 
-
   return realPos;
-  // debugger;
 
 
 };
