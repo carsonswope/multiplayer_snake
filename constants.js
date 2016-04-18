@@ -3,7 +3,7 @@ exports.NUMBER_DTS_TO_STORE = 10;
 exports.MS_AFTER_EXPECTED_SERVER_UPDATE_ARRIVAL_TO_UPDATE_SCREEN = 12;
 
 exports.APPLE_COUNT = 10;
-exports.STARTING_SNAKE_LENGTH = 10;
+exports.STARTING_SNAKE_LENGTH = 3;
 
 exports.CANVAS_PADDING = 8;
 exports.CANVAS_SHRINK_X = 0;
@@ -37,7 +37,8 @@ exports.DIRS = {
   N: [-1, 0],
   S: [ 1, 0],
   E: [ 0, 1],
-  W: [ 0,-1]
+  W: [ 0,-1],
+  NONE: [0, 0]
 }
 
 exports.KEYS = {

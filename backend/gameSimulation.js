@@ -48,7 +48,14 @@ exports.checkCurrentGameState = function(players, apples, frame) {
   Object.keys(players).forEach(function(player){
     currentPlayer = Player.fromJSON(players[player]);
 
-    if (currentPlayer.length){
+    if (currentPlayer.state == CONSTANTS.PLAYER_STATES.DEAD) {
+      currentPlayer.dir = 'NONE';
+      currentPlayer.snake = [];
+
+      _redisClient.hset('players', player, currentPlayer.json() );
+
+    } else if (currentPlayer.length) {
+
       currentPlayer.action = undefined;
       head = currentPlayer.snakeHeadAtFrame(frame);
       if (head) {
@@ -56,15 +63,14 @@ exports.checkCurrentGameState = function(players, apples, frame) {
 
         if (apples[headStr]) {
           currentPlayer.length += 1;
-          currentPlayer.action = 'GROW';
           _redisClient.hdel('apples', headStr);
           _redisClient.hset('apples', MathUtil.randomPosStr(), true);
         }
 
         if (allPositions[headStr].length > 1 || MathUtil.outOfBounds(head)) {
           currentPlayer.action = 'DIE';
-          currentPlayer.dir = undefined;
           currentPlayer.snake = currentPlayer.snakeAtFrame(frame);
+          currentPlayer.dir = 'NONE';
           currentPlayer.state = CONSTANTS.PLAYER_STATES.DEAD;
         }
       }

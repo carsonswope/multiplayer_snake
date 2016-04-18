@@ -23,9 +23,10 @@ Player.prototype.canPlace = function(){
   return this.state === CONSTANTS.PLAYER_STATES.DEAD;
 };
 
+
 Player.prototype.place = function(newPos, frame){
   this.snake = [newPos];
-  this.dir = undefined;
+  this.dir = 'NONE';
   this.action = undefined;
   this.length = CONSTANTS.STARTING_SNAKE_LENGTH;
   this.state = CONSTANTS.PLAYER_STATES.PLACED;
@@ -33,6 +34,7 @@ Player.prototype.place = function(newPos, frame){
 Player.prototype.canChangeDir = function(){
   return this.state !== CONSTANTS.PLAYER_STATES.DEAD;
 };
+
 Player.prototype.changeDir = function(newDir){
   this.dir = newDir;
   this.state = CONSTANTS.PLAYER_STATES.PLAYING;
@@ -44,6 +46,10 @@ Player.prototype.snakeAtFrame = function(frame){
 
   var tempSnake = [].concat(this.snake);
   var tempLength = this.length
+
+  if (this.dir == 'NONE') {
+    return tempSnake;
+  }
 
   if (frame >= this.frame) {
 
@@ -73,6 +79,8 @@ Player.prototype.snakeAtFrame = function(frame){
 
   }
 
+  // if (!tempSnake[0]) { debugger; }
+
   return tempSnake;
 
 };
@@ -88,7 +96,7 @@ Player.prototype.die = function(playerInfo) {
   this.frame = playerInfo.frame;
   this.snake = playerInfo.snake;
   this.state = CONSTANTS.PLAYER_STATES.DEAD;
-  this.dir = undefined;
+  this.dir = 'NONE';
 
 };
 

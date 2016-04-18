@@ -54,7 +54,7 @@ GameStore.slayPlayer = function() {
   var player = GameStore.ownPlayer();
   var snake = player.snakeAtFrame(_currentFrame - 1);
   player.snake = snake;
-  player.dir = undefined;
+  player.dir =  'NONE';
   player.state = CONSTANTS.PLAYER_STATES.DEAD;
   _moveRequests[_currentFrame] = true;
   Actions.declareDeath(_currentFrame, player.snake);

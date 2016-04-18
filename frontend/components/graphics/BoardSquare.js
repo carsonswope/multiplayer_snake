@@ -43,7 +43,7 @@ BoardSquare.prototype.draw = function(ctx, timePoint) {
     ctx.lineWidth = 2 - (2 * this.distance);
   }
 
-  var pad = 0;
+  var pad = 1;
 
   var h = (this.squareSize / 2) - (pad / 2);
 

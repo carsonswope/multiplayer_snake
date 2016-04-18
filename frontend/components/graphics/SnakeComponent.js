@@ -13,7 +13,11 @@ SnakeComponent.prototype.update = function(newSnake, clientSnake) {
 
   if (newSnake.action == 'GROW') {
 
+    console.log('growing');
+
   } else if (newSnake.action == 'DIE') {
+
+    console.log('died!');
 
   }
 

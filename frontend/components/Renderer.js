@@ -13,6 +13,7 @@ function Renderer(context, screenSize) {
   this.startingTime = new Date();
   this.size = screenSize;
   this.snakes = {};
+  this.deadSnakes = {};
   this.apples = {};
   this.board = new BoardComponent(this.size);
   requestAnimationFrame(this.tick.bind(this))
@@ -45,11 +46,11 @@ Renderer.prototype.timePoint = function(interval){
 
 Renderer.prototype.giveCurrentFrame = function(frame) {
 
-  this.board.update(this.snakes, GameStore.ownId());
-
-  Object.keys(frame.players).forEach(function(id){
-    this.snakes[id] = this.snakes[id] || new Snake(this.snakes[id], this.size, this.gradientCanvas);
-    this.snakes[id].update(frame.players[id], id == GameStore.ownId());
+  Object.keys(frame.players).forEach(function(id) {
+    if (!id == GameStore.ownId() || !this.deadSnakes[id]){
+      this.snakes[id] = this.snakes[id] || new Snake(this.snakes[id], this.size, this.gradientCanvas);
+      this.snakes[id].update(frame.players[id], id == GameStore.ownId());
+    }
   }.bind(this));
 
   Object.keys(frame.apples).forEach(function(id){
@@ -61,6 +62,24 @@ Renderer.prototype.giveCurrentFrame = function(frame) {
     if (this.apples[id].updated){ this.apples[id].updated = false; }
     else { delete this.apples[id]; }
   }.bind(this))
+
+  Object.keys(this.snakes).forEach(function(id){
+    if (!frame.players[id]){
+      this.deadSnakes[id] = this.snakes[id];
+      delete this.snakes[id];
+    }
+  }.bind(this));
+
+  Object.keys(this.deadSnakes).forEach(function(id){
+    this.deadSnakes[id].frameCount = this.deadSnakes[id].frameCount || 0;
+    this.deadSnakes[id].frameCount += 1;
+
+    if (this.deadSnakes[id].frameCount > 3) {
+      delete this.deadSnakes[id];
+    }
+  }.bind(this));
+
+  this.board.update(this.snakes, GameStore.ownId());
 
 };
 
@@ -93,6 +112,10 @@ Renderer.prototype.draw = function(time){
 
   Object.keys(this.snakes).forEach(function(id){
     this.snakes[id].draw(ctx);
+  }.bind(this));
+
+  Object.keys(this.deadSnakes).forEach(function(id){
+    this.deadSnakes[id].draw(ctx);
   }.bind(this));
 
 

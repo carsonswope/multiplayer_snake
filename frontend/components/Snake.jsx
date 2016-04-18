@@ -141,7 +141,8 @@ var Snake = React.createClass({
     var currentGame = {
       allPositions: {},
       players: {},
-      apples: {}
+      apples: {},
+      deadPlayers: {}
     }
 
     Object.keys(this.state.gameState.apples).forEach(function(pos){
@@ -162,10 +163,14 @@ var Snake = React.createClass({
 
       currentGame.players[id] = {
         snake: tempSnake,
-        action: this.state.gameState.players[id].action
+        action: this.state.gameState.players[id].action,
+        state: this.state.gameState.players[id].state
       }
 
       tempSnake.forEach(function(seg){
+
+        if (!seg) { debugger; }
+
         segId = MathUtil.posStr(seg);
         currentGame.allPositions[segId] = currentGame.allPositions[segId] || [];
         currentGame.allPositions[segId].push(id);
@@ -182,47 +187,55 @@ var Snake = React.createClass({
     // if our own player even has an active snake
     // then we see if we can preemptively catch
     // events (death, growing) that happen to the player
+    // (that happen to all players actually, we only tell the server when its us)
     // and not rely on the server to inform us
-    if (currentGame.players &&
-        currentGame.players[GameStore.ownId()] &&
-        currentGame.players[GameStore.ownId()].snake.length) {
+    var player, ownPlayer, head, headStr, snakeElementCount;
+    var snakeAtDeath, snakeTailAtDeath, snakeTailStr;
 
-      var player = currentGame.players[GameStore.ownId()];
-      var head = player.snake[0];
-      var headStr = MathUtil.posStr(head);
-      var snakeElementCount = 0;
+    if (currentGame.players) {
+      Object.keys(currentGame.players).forEach(function(id){
 
-      // if there is at least one other element which claims
-      // the same location as our head claims
-      if (currentGame.allPositions[headStr].length > 1) {
+        if (currentGame.players[id].snake.length) {
 
-        // see what those occupants are, actions accordingly
-        currentGame.allPositions[headStr].forEach(function(occupant){
-          if (occupant == 'APPLE') { player.action = 'GROW'; }
-          else { snakeElementCount += 1; }
-        }.bind(this) );
-      }
+          player = currentGame.players[id];
+          ownPlayer = id == GameStore.ownId();
+          head = player.snake[0];
+          headStr = MathUtil.posStr(head);
+          snakeElementCount = 0;
 
-      if (MathUtil.outOfBounds(head) || snakeElementCount > 1) { player.action = 'DIE'; }
+          if (currentGame.allPositions[headStr].length > 1) {
 
-      // if it turns out we are dead,
-      // rewind our snake one frame so it looks like
-      // we have stopped at the moment of death
-      // and then tell the server about it (with GameStore.slayPlayer())
-      if (player.action == 'DIE') {
+            currentGame.allPositions[headStr].forEach(function(occupant){
+              if (occupant == 'APPLE') { player.action = 'GROW'; }
+              else { snakeElementCount += 1; }
+            }.bind(this));
 
-        var snakeAtDeath = this.state.gameState.players[GameStore.ownId()].snakeAtFrame(GameStore.currentFrame() - 1);
-        var snakeTailAtDeath = snakeAtDeath[snakeAtDeath.length - 1];
-        var snakeTailStr = '' + snakeTailAtDeath[0] + ',' + snakeTailAtDeath[1];
+          }
 
-        currentGame.allPositions[snakeTailStr] = currentGame.allPositions[snakeTailStr] || [];
-        currentGame.allPositions[snakeTailStr].push(GameStore.ownId());
-        player.snake.push(snakeTailAtDeath);
-        player.snake.shift();
+          if (MathUtil.outOfBounds(head) || snakeElementCount > 1) {
+            player.action = 'DIE';
+          }
 
-        GameStore.slayPlayer();
-      }
+          if (player.action == 'DIE' || (player.state == CONSTANTS.PLAYER_STATES.DEAD && id != GameStore.ownId())) {
 
+            snakeAtDeath = this.state.gameState.players[id].snakeAtFrame(GameStore.currentFrame() - 1);
+            snakeTailAtDeath = snakeAtDeath[snakeAtDeath.length - 1];
+            snakeTailStr = MathUtil.posStr(snakeTailAtDeath);
+
+            currentGame.allPositions[snakeTailStr] = currentGame.allPositions[snakeTailStr] || [];
+            currentGame.allPositions[snakeTailStr].push(id);
+            player.snake.push(snakeTailAtDeath);
+            player.snake.shift();
+
+            currentGame.deadPlayers[id] = player;
+            delete currentGame.players[id];
+
+
+            if (id == GameStore.ownId()) { GameStore.slayPlayer(); }
+          }
+
+        }
+      }.bind(this));
     }
   },
 
