@@ -64,7 +64,7 @@ SnakeRadar.prototype.draw = function(ctx) {
   );
 
   gradient.addColorStop(0, 'transparent');
-  gradient.addColorStop(1, 'rgba(120,160,180,0.1)');
+  gradient.addColorStop(1, 'rgba(120,160,180,0.2)');
 
   ctx.fillStyle = gradient;
 

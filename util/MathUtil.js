@@ -6,9 +6,14 @@ exports.stepsAway = function(pos1, pos2) {
 
 exports.posSum = function(pos1, pos2) {
 
-  return ([
-    pos1[0] + pos2[0], pos1[1] + pos2[1]
-  ]);
+  if (pos1 && pos2) {
+    return ([
+      pos1[0] + pos2[0], pos1[1] + pos2[1]
+    ]);
+  } else {
+    console.log('error in posSum');
+  }
+
 };
 
 exports.random = function(max) {
@@ -46,9 +51,13 @@ exports.posStr = function(pos) {
 }
 
 exports.posDif = function(pos1, pos2) {
-  return ([
-    pos2[0] - pos1[0], pos2[1] - pos1[1]
-  ]);
+  if (pos1 && pos2) {
+    return ([
+      pos2[0] - pos1[0], pos2[1] - pos1[1]
+    ]);
+  } else {
+    console.log('error in posDif');
+  }
 };
 
 exports.outOfBounds = function(pos) {

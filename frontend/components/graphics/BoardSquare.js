@@ -10,18 +10,17 @@ BoardSquare.inherits(RenderableComponent);
 
 BoardSquare.prototype.draw = function(ctx) {
 
-  var pad = -0.7;
+  var pad = 0;
 
   var h = (this.squareSize / 2) - (pad / 2);
 
   var pos = this.screenCoordinates;
 
   ctx.beginPath();
-  ctx.strokeStyle = '#9FD1CF'
-  ctx.lineWidth = 0;
-  ctx.fillStyle = '#D1E2E0'
+  ctx.strokeStyle = 'rgba(200,200,200,0.1)'
+  ctx.lineWidth = 2;
   ctx.rect(pos[0] - h, pos[1] - h, this.squareSize - pad, this.squareSize - pad);
-  ctx.fill();
+  ctx.stroke();
 
 }
 

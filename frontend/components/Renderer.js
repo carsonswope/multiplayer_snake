@@ -82,13 +82,6 @@ Renderer.prototype.draw = function(time){
   var ctx = this.ctx;
 
   ctx.clearRect(0, 0, this.size.width, this.size.height);
-  // ctx.save();
-
-  // ctx.fillStyle = 'white';
-
-  // ctx.fillRect(0,0,600,600);
-
-  // ctx.fill();
 
   // this.board.draw(ctx);
 
@@ -100,7 +93,6 @@ Renderer.prototype.draw = function(time){
     this.snakes[id].draw(ctx);
   }.bind(this));
 
-  // ctx.restore();
 
 };
 

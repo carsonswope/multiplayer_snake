@@ -64,7 +64,7 @@ exports.checkCurrentGameState = function(players, apples, frame) {
         if (allPositions[headStr].length > 1 || MathUtil.outOfBounds(head)) {
           currentPlayer.action = 'DIE';
           currentPlayer.dir = undefined;
-          currentPlayer.snake = currentPlayer.snakeAtFrame(frame)
+          currentPlayer.snake = currentPlayer.snakeAtFrame(frame);
           currentPlayer.state = CONSTANTS.PLAYER_STATES.DEAD;
         }
       }
