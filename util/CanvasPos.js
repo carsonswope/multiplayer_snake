@@ -16,7 +16,7 @@ var squareSideLength = function(screenSize) {
     screen.width / cols : screen.height / rows;
 }
 
-var getOffset = function(screen, squareSize) {
+exports.getOffset = function(screen, squareSize) {
   return [
     (screen.height - (squareSize * rows)) / 2,
     (screen.width -  (squareSize * cols)) / 2
@@ -27,7 +27,7 @@ exports.coords = function(pos, screenSize) {
 
   var squareSize = squareSideLength(screenSize);
   var screen = getScreen(screenSize);
-  var offset = getOffset(screen, squareSize);
+  var offset = exports.getOffset(screen, squareSize);
 
   console.log([
     Math.floor(((pos[1] - (padding + offset[0])) / squareSize)),
@@ -39,12 +39,8 @@ exports.coords = function(pos, screenSize) {
     Math.floor(((pos[0] - (padding + offset[1])) / squareSize))
   ]
 
-  debugger
-
   if (realPos[0] == -0 ) { realPos[0] = 0; }
   if (realPos[1] == -0 ) { realPos[1] = 0; }
-
-  // debugger;
 
   return realPos;
 
@@ -55,7 +51,7 @@ exports.screenPos = function(pos, screenSize) {
 
   var screen = getScreen(screenSize);
   var squareSize = squareSideLength(screen);
-  var offset = getOffset(screen, squareSize);
+  var offset = exports.getOffset(screen, squareSize);
 
   var center = [
     (padding / 2) + offset[1] + ((pos[1] + 0.5) * squareSize),

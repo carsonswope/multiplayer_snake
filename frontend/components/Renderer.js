@@ -5,6 +5,8 @@ var Apple = require('./graphics/AppleComponent');
 var Snake = require('./graphics/SnakeComponent');
 var BoardComponent = require('./graphics/BoardComponent');
 
+
+
 function Renderer(context, screenSize) {
   this.ctx = context
   this.evenFrame = 0;
@@ -14,6 +16,7 @@ function Renderer(context, screenSize) {
   this.apples = {};
   this.board = new BoardComponent(this.size);
   requestAnimationFrame(this.tick.bind(this))
+
 };
 
 Renderer.prototype.scheduleNextFrame = function(time) {
@@ -43,7 +46,7 @@ Renderer.prototype.timePoint = function(interval){
 Renderer.prototype.giveCurrentFrame = function(frame) {
 
   Object.keys(frame.players).forEach(function(id){
-    this.snakes[id] = this.snakes[id] || new Snake(this.snakes[id], this.size);
+    this.snakes[id] = this.snakes[id] || new Snake(this.snakes[id], this.size, this.gradientCanvas);
     this.snakes[id].update(frame.players[id]);
   }.bind(this));
 
@@ -77,8 +80,17 @@ Renderer.prototype.resize = function(newSize){
 Renderer.prototype.draw = function(time){
 
   var ctx = this.ctx;
+
   ctx.clearRect(0, 0, this.size.width, this.size.height);
-  this.board.draw(ctx);
+  // ctx.save();
+
+  // ctx.fillStyle = 'white';
+
+  // ctx.fillRect(0,0,600,600);
+
+  // ctx.fill();
+
+  // this.board.draw(ctx);
 
   Object.keys(this.apples).forEach(function(id){
     this.apples[id].draw(ctx);
@@ -87,6 +99,8 @@ Renderer.prototype.draw = function(time){
   Object.keys(this.snakes).forEach(function(id){
     this.snakes[id].draw(ctx);
   }.bind(this));
+
+  // ctx.restore();
 
 };
 

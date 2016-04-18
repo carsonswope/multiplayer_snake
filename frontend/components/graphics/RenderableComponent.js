@@ -5,6 +5,8 @@ require('../../../util/Inheritance');
 function RendererableComponent(position, screenSize, direction){
   this.position = position;
 
+  this.screenSize = screenSize;
+
   this.direction = direction || 'N';
 
   var screenInfo = CanvasHelper.screenPos(position, screenSize);

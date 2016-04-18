@@ -10,7 +10,7 @@ BoardSquare.inherits(RenderableComponent);
 
 BoardSquare.prototype.draw = function(ctx) {
 
-  var pad = 3;
+  var pad = -0.7;
 
   var h = (this.squareSize / 2) - (pad / 2);
 

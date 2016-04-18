@@ -14,6 +14,7 @@ SnakeBodyStraight.prototype.draw = function(ctx) {
   ctx.beginPath();
   ctx.fillStyle = '#2CDB32'
   ctx.rect(pos[0] - h, pos[1] - h, this.squareSize - pad, this.squareSize - pad);
+  ctx.closePath();
   ctx.fill();
 
 };
