@@ -4,7 +4,7 @@ var MathUtil = require('../../util/MathUtil');
 var Apple = require('./graphics/AppleComponent');
 var Snake = require('./graphics/SnakeComponent');
 var BoardComponent = require('./graphics/BoardComponent');
-
+var GameStore = require('../stores/GameStore');
 
 
 function Renderer(context, screenSize) {
@@ -45,9 +45,11 @@ Renderer.prototype.timePoint = function(interval){
 
 Renderer.prototype.giveCurrentFrame = function(frame) {
 
+  this.board.update(this.snakes, GameStore.ownId());
+
   Object.keys(frame.players).forEach(function(id){
     this.snakes[id] = this.snakes[id] || new Snake(this.snakes[id], this.size, this.gradientCanvas);
-    this.snakes[id].update(frame.players[id]);
+    this.snakes[id].update(frame.players[id], id == GameStore.ownId());
   }.bind(this));
 
   Object.keys(frame.apples).forEach(function(id){
@@ -83,7 +85,7 @@ Renderer.prototype.draw = function(time){
 
   ctx.clearRect(0, 0, this.size.width, this.size.height);
 
-  // this.board.draw(ctx);
+  this.board.draw(ctx, this.timePoint(5000));
 
   Object.keys(this.apples).forEach(function(id){
     this.apples[id].draw(ctx);

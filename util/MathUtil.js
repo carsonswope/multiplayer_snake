@@ -50,6 +50,27 @@ exports.posStr = function(pos) {
   return '' + pos[0] + ',' + pos[1];
 }
 
+exports.neighborPosStrs = function(posStr) {
+
+  var strs = [];
+  var parsedPos = exports.posParse(posStr);
+
+  for (var i = 0; i < 9; i++) {
+    if (i != 4){
+      strs.push(
+        exports.posStr([
+          parsedPos[0] - 1 + Math.floor(i / 3),
+          parsedPos[1] - 1 + (i % 3)
+        ])
+      );
+    }
+  }
+
+  return strs;
+
+
+}
+
 exports.posDif = function(pos1, pos2) {
   if (pos1 && pos2) {
     return ([
