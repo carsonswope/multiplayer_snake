@@ -13,9 +13,12 @@ function Renderer(context, screenSize) {
   this.startingTime = new Date();
   this.size = screenSize;
   this.snakes = {};
+  this.mousePosition;
   this.deadSnakes = {};
   this.apples = {};
   this.board = new BoardComponent(this.size);
+  this.playerState;
+
   requestAnimationFrame(this.tick.bind(this))
 
 };
@@ -25,19 +28,18 @@ Renderer.prototype.scheduleNextFrame = function(time) {
   this.nextFrameTime = time;
 };
 
-Renderer.prototype.framePoint = function(){
-  var frameP = (new Date() - this.lastFrameTime) / (this.nextFrameTime - this.lastFrameTime);
-
-  if (this.lastFrameP > frameP) {
-    this.evenFrame = !this.evenFrame ? 1 : 0;
-  }
-
-  this.lastFrameP = frameP;
-  return frameP;
+Renderer.prototype.updateMousePosition = function(coords) {
+  this.mousePosition = coords;
+  this.board.mousePosition = MathUtil.posStr(coords);
 };
 
-Renderer.prototype.halfFramePoint = function(){
-  return this.evenFrame + this.framePoint();
+Renderer.prototype.framePoint = function(){
+  var currentTime = new Date();
+  var frameP = (currentTime - this.lastFrameTime) / (this.nextFrameTime - this.lastFrameTime);
+
+  if (frameP > 1) { frameP = 1; }
+  if (frameP < 0) { frameP = 0; }
+  return frameP;
 };
 
 Renderer.prototype.timePoint = function(interval){
@@ -46,9 +48,15 @@ Renderer.prototype.timePoint = function(interval){
 
 Renderer.prototype.giveCurrentFrame = function(frame) {
 
+  this.playerState = frame.playerState;
+
   Object.keys(frame.players).forEach(function(id) {
     if (!id == GameStore.ownId() || !this.deadSnakes[id]){
-      this.snakes[id] = this.snakes[id] || new Snake(this.snakes[id], this.size, this.gradientCanvas);
+      this.snakes[id] = this.snakes[id] || new Snake(
+        this.snakes[id],
+        this.size,
+        id == GameStore.ownId()
+      );
       this.snakes[id].update(frame.players[id], id == GameStore.ownId());
     }
   }.bind(this));
@@ -74,12 +82,12 @@ Renderer.prototype.giveCurrentFrame = function(frame) {
     this.deadSnakes[id].frameCount = this.deadSnakes[id].frameCount || 0;
     this.deadSnakes[id].frameCount += 1;
 
-    if (this.deadSnakes[id].frameCount > 3) {
+    if (this.deadSnakes[id].frameCount > CONSTANTS.SNAKE_DEATH_FRAMES) {
       delete this.deadSnakes[id];
     }
   }.bind(this));
 
-  this.board.update(this.snakes, GameStore.ownId());
+  this.board.update(this.snakes, GameStore.ownId(), this.playerState);
 
 };
 
@@ -107,7 +115,7 @@ Renderer.prototype.draw = function(time){
   this.board.draw(ctx, this.framePoint());
 
   Object.keys(this.apples).forEach(function(id){
-    this.apples[id].draw(ctx);
+    this.apples[id].draw(ctx, this.timePoint(4000));
   }.bind(this));
 
   Object.keys(this.snakes).forEach(function(id){
@@ -115,7 +123,8 @@ Renderer.prototype.draw = function(time){
   }.bind(this));
 
   Object.keys(this.deadSnakes).forEach(function(id){
-    this.deadSnakes[id].draw(ctx);
+    this.deadSnakes[id].dead = true;
+    this.deadSnakes[id].draw(ctx, this.framePoint());
   }.bind(this));
 
 

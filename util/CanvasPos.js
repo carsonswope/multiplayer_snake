@@ -29,11 +29,6 @@ exports.coords = function(pos, screenSize) {
   var screen = getScreen(screenSize);
   var offset = exports.getOffset(screen, squareSize);
 
-  console.log([
-    Math.floor(((pos[1] - (padding + offset[0])) / squareSize)),
-    Math.floor(((pos[0] - (padding + offset[1])) / squareSize))
-  ]);
-
   var realPos = [
     Math.floor(((pos[1] - (padding + offset[0])) / squareSize)),
     Math.floor(((pos[0] - (padding + offset[1])) / squareSize))

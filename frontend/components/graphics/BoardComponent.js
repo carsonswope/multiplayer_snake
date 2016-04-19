@@ -12,6 +12,8 @@ function BoardComponent(size) {
   this.cols = CONSTANTS.BOARD.WIDTH;
   this.size = size;
 
+  this.mousePosition;
+
   this.elements = [];
 
   for (var row = 0; row < this.rows; row++) {
@@ -28,7 +30,7 @@ function BoardComponent(size) {
 
 BoardComponent.inherits(Renderable);
 
-BoardComponent.prototype.update = function(snakes, ownId) {
+BoardComponent.prototype.update = function(snakes, ownId, playerState) {
 
   var seen = {};
   var toSee = {};
@@ -39,6 +41,11 @@ BoardComponent.prototype.update = function(snakes, ownId) {
     el.lastDistance = el.distance;
     el.touchedLast = false;
   });
+
+  if (playerState == CONSTANTS.PLAYER_STATES.DEAD &&
+      this.mousePosition) {
+    toSee[this.mousePosition] = true;
+  }
 
   Object.keys(snakes).forEach(function(id){
     if (snakes[id].clientSnake) {
@@ -67,6 +74,8 @@ BoardComponent.prototype.update = function(snakes, ownId) {
       current = this.elements[
         posParse[0] * CONSTANTS.BOARD.WIDTH + posParse[1]
       ];
+
+      if (!current) { debugger; }
 
       current.distance = (distance / MAX_DIST);
       current.touchedLast = true;
@@ -105,6 +114,9 @@ BoardComponent.prototype.draw = function(ctx, timePoint){
   // console.log(this.elements.length);
   // console.log(new Date());
   //
+
+  // debugger
+
   this.elements.forEach(function(el){
     el.draw(ctx, timePoint);
   });

@@ -1,13 +1,13 @@
 var CanvasHelper = require('../../../util/CanvasPos');
 var RenderableComponent = require('./RenderableComponent');
+var COLORS = require('../../../colors.js')
 
 var NUMBER_POINTS = 10;
 var MAGNITUDE = 2;
 var LINE_WIDTH = 2;
 
-function SnakeBodyStraight(originalPosition, screenSize, dir, idx) {
+function SnakeBodyStraight(originalPosition, screenSize, dir) {
   this.dir = dir
-  this.idx = idx;
   RenderableComponent.call(this, originalPosition, screenSize);
 }
 
@@ -15,23 +15,28 @@ SnakeBodyStraight.inherits(RenderableComponent);
 
 SnakeBodyStraight.prototype.els = function(framePoint) {
 
+  var fillColor = this.ownPlayer ?
+    COLORS.OWN_PLAYER_SNAKE_BODY : COLORS.OTHER_PLAYER_SNAKE_BODY;
+  var strokeColor = this.ownPlayer ?
+    COLORS.OWN_PLAYER_SNAKE_OUTLINE : COLORS.OTHER_PLAYER_SNAKE_OUTLINE;
+
   return [{
     points: [[-1,-1], [-1,1], [1,1], [1,-1]],
-    fill: '#00FF26'
+    fill: fillColor
   },{
     points: [[-1,-1], [-1,1]],
     width: 4,
-    stroke: '#1DB835'
+    stroke: strokeColor
   },{
     points: [[1,-1], [1,1]],
     width: 4,
-    stroke: '#1DB835'
+    stroke: strokeColor
   }];
 
 
 };
 
-SnakeBodyStraight.prototype.draw = function(ctx, framePoint) {
+SnakeBodyStraight.prototype.draw = function(ctx, framePoint, dY) {
 
   if (this.dir[0] == 0) {
     this.rotation = Math.PI / 2;
@@ -40,12 +45,12 @@ SnakeBodyStraight.prototype.draw = function(ctx, framePoint) {
   }
 
   if (this.justAte) {
-    this.scale = 1 + (0.5 * Math.sin(framePoint * Math.PI));
+    this.scale = 1.3 + (0.5 * Math.sin(framePoint * Math.PI));
   } else {
     this.scale = 1;
   }
 
-  this.toScreen(ctx, framePoint);
+  this.toScreen(ctx, framePoint, dY);
 
 };
 

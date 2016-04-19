@@ -85,6 +85,19 @@ var Snake = React.createClass({
 
   },
 
+  handleMouseMove: function(e) {
+    e.preventDefault();
+
+    var coords = CanvasHelper.coords(
+      [e.clientX, e.clientY], {width: this.state.size.width - 8, height: this.state.size.height - 8}
+    )
+
+    if (!MathUtil.outOfBounds(coords)){
+      this.renderer.updateMousePosition(coords);
+    }
+
+  },
+
   eligibleMove: function(currentDir, testDir) {
     return  currentDir != testDir &&
             CONSTANTS.OPPOSITE_DIRS[currentDir] != testDir;
@@ -142,7 +155,8 @@ var Snake = React.createClass({
       allPositions: {},
       players: {},
       apples: {},
-      deadPlayers: {}
+      deadPlayers: {},
+      playerState: this.ownPlayerState()
     }
 
     Object.keys(this.state.gameState.apples).forEach(function(pos){
@@ -168,9 +182,6 @@ var Snake = React.createClass({
       }
 
       tempSnake.forEach(function(seg){
-
-        if (!seg) { debugger; }
-
         segId = MathUtil.posStr(seg);
         currentGame.allPositions[segId] = currentGame.allPositions[segId] || [];
         currentGame.allPositions[segId].push(id);
@@ -264,6 +275,7 @@ var Snake = React.createClass({
           height: this.state.size.height
         }}
         onClick={this.handleClick}
+        onMouseMove={this.handleMouseMove}
         ref='gameCanvas'>
       </canvas>
     );

@@ -9,6 +9,8 @@ exports.CANVAS_PADDING = 8;
 exports.CANVAS_SHRINK_X = 0;
 exports.CANVAS_SHRINK_Y = 5;
 
+exports.SNAKE_DEATH_FRAMES = 10;
+
 exports.PLAYER_STATES = {
   PLAYING: 1,
   PLACED:  2,

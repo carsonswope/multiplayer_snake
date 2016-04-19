@@ -5,12 +5,9 @@ require('../../../util/Inheritance');
 
 function RenderableComponent(position, screenSize){
   this.position = position;
-
   this.screenSize = screenSize;
-
   this.scale = 1;
   this.rotation = 0;
-
   var screenInfo = CanvasHelper.screenPos(position, screenSize);
   this.screenCoordinates = screenInfo.pos;
   this.squareSize = screenInfo.squareSize;
@@ -22,7 +19,7 @@ RenderableComponent.prototype.resize = function(newSize) {
   this.squareSize = screenInfo.squareSize;
 }
 
-RenderableComponent.prototype.toScreen = function (ctx, framePoint) {
+RenderableComponent.prototype.toScreen = function (ctx, framePoint, dY) {
   // this.els()
   // if this.els() looks like this: [{
   //   points:  [[-1,-1], [ 1,-1], [ 1, 1], [ -1, 1]],
@@ -38,6 +35,8 @@ RenderableComponent.prototype.toScreen = function (ctx, framePoint) {
 
   var coord;
 
+  if (!dY) { dY = 0; }
+
   this.els(framePoint).forEach(function(el){
     ctx.beginPath();
     if (el.fill  ) { ctx.fillStyle   = el.fill; }
@@ -46,13 +45,13 @@ RenderableComponent.prototype.toScreen = function (ctx, framePoint) {
 
     el.points.forEach(function(point, i){
       coord = this.screenCoordinate(point);
-      if (!i) { ctx.moveTo(coord[0], coord[1]); }
-      else {    ctx.lineTo(coord[0], coord[1]); }
+      if (!i) { ctx.moveTo(coord[0], coord[1] + dY); }
+      else {    ctx.lineTo(coord[0], coord[1] + dY); }
     }.bind(this));
 
     if (el.fill ) { ctx.fill();   }
     if (el.stroke){ ctx.stroke(); }
-    ctx.closePath();
+
 
 
   }.bind(this));

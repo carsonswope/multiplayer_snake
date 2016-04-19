@@ -1,5 +1,7 @@
 var CanvasHelper = require('../../../util/CanvasPos');
 var RenderableComponent = require('./RenderableComponent');
+var COLORS = require('../../../colors.js')
+
 
 function SnakeBodyTail(originalPosition, screenSize, dir, stationary) {
 
@@ -12,6 +14,11 @@ function SnakeBodyTail(originalPosition, screenSize, dir, stationary) {
 SnakeBodyTail.inherits(RenderableComponent);
 
 SnakeBodyTail.prototype.els = function (framePoint) {
+
+  var fillColor = this.ownPlayer ?
+    COLORS.OWN_PLAYER_SNAKE_BODY : COLORS.OTHER_PLAYER_SNAKE_BODY;
+  var strokeColor = this.ownPlayer ?
+    COLORS.OWN_PLAYER_SNAKE_OUTLINE : COLORS.OTHER_PLAYER_SNAKE_OUTLINE;
 
   var cutoff = 0.5;
 
@@ -27,30 +34,26 @@ SnakeBodyTail.prototype.els = function (framePoint) {
 
   return [{
     points: points,
-    fill: '#00FF26',
+    fill: fillColor,
     width: 4,
-    stroke: '#1DB835'
+    stroke: strokeColor
   }];
 
 };
 
-SnakeBodyTail.prototype.draw = function(ctx, framePoint) {
+SnakeBodyTail.prototype.draw = function(ctx, framePoint, dY) {
 
 
   this.rotation = Math.atan2(this.dir[0] * -1, this.dir[1]);
 
-  this.toScreen(ctx, framePoint);
+  if (this.justAte) {
+    this.scale = 1.3 + (0.5 * Math.sin(framePoint * Math.PI));
+  } else {
+    this.scale = 1;
+  }
 
-  return;
 
-  var pad = 1;
-  var h = (this.squareSize / 2) - (pad / 2);
-  var pos = this.screenCoordinates;
-  ctx.beginPath();
-  ctx.fillStyle = 'black'
-  ctx.rect(pos[0] - h, pos[1] - h, this.squareSize - pad, this.squareSize - pad);
-  ctx.closePath();
-  ctx.fill();
+  this.toScreen(ctx, framePoint, dY);
 
 };
 

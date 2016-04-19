@@ -5,14 +5,16 @@ var SnakeBodyHead = require('./SnakeBodyHead');
 var DigestingApple = require('./DigestingApple');
 
 var MathUtil = require('../../../util/MathUtil');
+var CONSTANTS = require('../../../constants.js');
 
 
-function SnakeComponent(positions, screenSize) {
+function SnakeComponent(positions, screenSize, ownPlayer) {
 
   this.size = screenSize;
   this.bodySegments = [];
   this.digestingApples = {};
   this.applesEaten = 1;
+  this.ownPlayer = ownPlayer;
 
 }
 
@@ -41,6 +43,11 @@ SnakeComponent.prototype.update = function(newSnake, clientSnake) {
   }
 
   var oldCoord = this.bodySegments[this.bodySegments.length - 1];
+  var justBorn = false;
+
+  if (!this.bodySegments.length && newSnake.snake.length) {
+    justBorn = true;
+  }
 
   this.bodySegments = [];
 
@@ -53,21 +60,17 @@ SnakeComponent.prototype.update = function(newSnake, clientSnake) {
     var newSeg;
 
     if (i == 0){
-      newSeg = new SnakeBodyHead(seg, this.size, dir.toTail, i)
-
+      newSeg = new SnakeBodyHead(seg, this.size, dir.toTail, justBorn)
     } else if ( i == newSnake.snake.length - 1){
       var stationary = oldCoord && MathUtil.posStr(oldCoord.position) == MathUtil.posStr(seg);
       newSeg = new SnakeBodyTail(seg, this.size, dir.fromHead, stationary)
-
     } else if ( MathUtil.curved(dir) ){
-      // debugger
       newSeg = new SnakeBodyCurve(seg, this.size, dir)
-
     } else {
-      newSeg = new SnakeBodyStraight(seg, this.size, dir.toTail, i)
-
+      newSeg = new SnakeBodyStraight(seg, this.size, dir.toTail)
     }
 
+    newSeg.ownPlayer = this.ownPlayer;
     newSeg.justAte = this.justAte;
 
     this.bodySegments.push(newSeg);
@@ -82,19 +85,33 @@ SnakeComponent.prototype.resize = function (newSize) {
 
 SnakeComponent.prototype.draw = function(ctx, framePoint) {
 
-  this.bodySegments.forEach(function(seg, i){
-    this.bodySegments[this.bodySegments.length - (1 + i)].draw(ctx, framePoint);
-  }.bind(this));
+  if (this.dead) {
 
-  var app;
+    var dY = (((this.frameCount - 1) + framePoint) / CONSTANTS.SNAKE_DEATH_FRAMES) * (this.size.height);
 
-  Object.keys(this.digestingApples).forEach(function(id){
-    app = this.digestingApples[id];
-    if (app.completed) { delete this.digestingApples[id]; }
-    else { app.draw(ctx, framePoint) };
+    this.bodySegments.forEach(function(seg){
+      seg.draw(ctx, 1, dY);
+    }.bind(this));
+
+  } else {
+
+    this.bodySegments.forEach(function(seg){
+      seg.draw(ctx, framePoint);
+    }.bind(this));
+
+    var app;
+
+    Object.keys(this.digestingApples).forEach(function(id){
+      app = this.digestingApples[id];
+      if (app.completed) {
+        delete this.digestingApples[id];
+      }
+      else { app.draw(ctx, framePoint) };
 
 
-  }.bind(this));
+    }.bind(this));
+
+  }
 
 
 };
