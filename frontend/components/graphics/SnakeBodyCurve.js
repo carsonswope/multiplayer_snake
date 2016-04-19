@@ -12,51 +12,38 @@ function SnakeBodyCurve(originalPosition, screenSize, dir) {
 
 SnakeBodyCurve.inherits(RenderableComponent);
 
+SnakeBodyCurve.prototype.els = function(framePoint) {
+
+  return [{
+    points: [ [-1, 1], [-1,0], [0,-1], [1,-1], [1,1]],
+    fill: '#00FF26'
+  },{
+    points: [ [-1, 1], [-1,0], [0,-1], [1,-1]],
+    width: 4,
+    stroke: '#1DB835'
+  }]
+};
+
 SnakeBodyCurve.prototype.draw = function(ctx, framePoint) {
 
-  var size = this.squareSize;
+  switch (MathUtil.getCurveType(this.dir)) {
+    case 'topLeft':
+      this.rotation = 0; break;
+    case 'topRight':
+      this.rotation = 1.5 * Math.PI; break;
+    case 'botLeft':
+      this.rotation = 0.5 * Math.PI; break;
+    case 'botRight':
+      this.rotation = 1   * Math.PI; break;
+  }
+
   if (this.justAte) {
-    size = size * (1 + 0.5 * Math.sin(framePoint * Math.PI))
+    this.scale = 1 + (0.5 * Math.sin(framePoint * Math.PI));
+  } else {
+    this.scale = 1;
   }
 
-  var pad = 5;
-  var h = (this.squareSize / 2) - (pad / 2);
-  var pos = this.screenCoordinates;
-
-  var half = size / 2;
-
-  var plus = function(pos) { return pos + half; }
-  var minus = function(pos){ return pos - half; }
-  var mid = function(pos)  { return pos; }
-
-  var ops = {
-    topLeft:  [ [minus, plus], [minus, mid], [mid, minus], [plus, minus], [plus, plus] ],
-    topRight: [ [plus,  plus], [plus,  mid], [mid, minus], [minus,minus], [minus,plus] ],
-    botLeft:  [ [minus,minus], [minus, mid], [mid, plus ], [plus, plus ], [plus,minus] ],
-    botRight: [ [plus, minus], [plus,  mid], [mid, plus ], [minus,plus ], [minus,minus]]
-  }
-
-  ctx.lineWidth = 4;
-  ctx.fillStyle = '#00FF26';
-  ctx.strokeStyle = '#1DB835';
-
-  var t = MathUtil.getCurveType(this.dir);
-
-  ctx.beginPath();
-  ctx.moveTo(ops[t][0][0](pos[0]), ops[t][0][1](pos[1]));
-  ctx.lineTo(ops[t][1][0](pos[0]), ops[t][1][1](pos[1]));
-  ctx.lineTo(ops[t][2][0](pos[0]), ops[t][2][1](pos[1]));
-  ctx.lineTo(ops[t][3][0](pos[0]), ops[t][3][1](pos[1]));
-  ctx.lineTo(ops[t][4][0](pos[0]), ops[t][4][1](pos[1]));
-  ctx.fill();
-
-  ctx.beginPath();
-  ctx.moveTo(ops[t][0][0](pos[0]), ops[t][0][1](pos[1]));
-  ctx.lineTo(ops[t][1][0](pos[0]), ops[t][1][1](pos[1]));
-  ctx.lineTo(ops[t][2][0](pos[0]), ops[t][2][1](pos[1]));
-  ctx.lineTo(ops[t][3][0](pos[0]), ops[t][3][1](pos[1]));
-  ctx.stroke();
-
+  this.toScreen(ctx, framePoint);
 
 };
 

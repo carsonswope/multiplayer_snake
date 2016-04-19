@@ -13,7 +13,16 @@ function DigestingApple(originalPosition, screenSize, snakeSegs) {
 
 DigestingApple.inherits(RenderableComponent);
 
-DigestingApple.prototype.draw = function(ctx) {
+DigestingApple.prototype.els = function(framePoint) {
+
+  return [{
+    points: [[-1,-1], [-1,1], [1,1], [1,-1]],
+    fill: 'red'
+  }];
+
+};
+
+DigestingApple.prototype.draw = function(ctx, framePoint) {
 
   var timeElapsed = new Date() - (this.timeEaten);
 
@@ -41,23 +50,16 @@ DigestingApple.prototype.draw = function(ctx) {
       scrnPos2[1] - scrnPos1[1]
     ];
 
-    var pos = [
+    this.screenCoordinates = [
       scrnPos1[0] + (dPos[0] * pctDiff),
       scrnPos1[1] + (dPos[1] * pctDiff)
     ]
 
-    var size = this.squareSize * 0.6;
+    this.scale = 0.8;
 
-    ctx.beginPath();
-    // ctx.moveTo(pos[0], pos[1]);
-    ctx.arc(pos[0], pos[1], size, 0, Math.PI * 2);
-    ctx.lineWidth = 4;
-    ctx.fillStyle = '#1DB835'
-    ctx.closePath();
-    ctx.fill();
+    this.toScreen(ctx, framePoint)
 
-
-  } else if (normalizedTimeElapsed > this.snakeSegs.length) {
+  } else if (normalizedTimeElapsed > this.snakeSegs.length + 1) {
 
     this.completed = true;
 

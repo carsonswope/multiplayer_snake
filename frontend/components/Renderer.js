@@ -104,7 +104,7 @@ Renderer.prototype.draw = function(time){
 
   ctx.clearRect(0, 0, this.size.width, this.size.height);
 
-  this.board.draw(ctx, this.timePoint(5000));
+  this.board.draw(ctx, this.framePoint());
 
   Object.keys(this.apples).forEach(function(id){
     this.apples[id].draw(ctx);

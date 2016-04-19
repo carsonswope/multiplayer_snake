@@ -36,7 +36,8 @@ BoardComponent.prototype.update = function(snakes, ownId) {
   var posStr;
 
   this.elements.forEach(function(el){
-    el.distance = 100;
+    el.lastDistance = el.distance;
+    el.touchedLast = false;
   });
 
   Object.keys(snakes).forEach(function(id){
@@ -55,7 +56,6 @@ BoardComponent.prototype.update = function(snakes, ownId) {
 
   while (Object.keys(toSee).length) {
 
-
     Object.keys(toSee).forEach(function(posStr){
 
       delete toSee[posStr];
@@ -68,12 +68,13 @@ BoardComponent.prototype.update = function(snakes, ownId) {
         posParse[0] * CONSTANTS.BOARD.WIDTH + posParse[1]
       ];
 
-      current.distance = distance / MAX_DIST;
+      current.distance = (distance / MAX_DIST);
+      current.touchedLast = true;
       MathUtil.neighborPosStrs(posStr).forEach(function(neighborPosStr){
         posParse = MathUtil.posParse(neighborPosStr);
         if (!seen[neighborPosStr] &&
             !MathUtil.outOfBounds(posParse) &&
-             distance < MAX_DIST) {
+            distance < MAX_DIST) {
 
           nextRound[neighborPosStr] = true;
 

@@ -40,6 +40,8 @@ SnakeComponent.prototype.update = function(newSnake, clientSnake) {
 
   }
 
+  var oldCoord = this.bodySegments[this.bodySegments.length - 1];
+
   this.bodySegments = [];
 
   var dir;
@@ -54,7 +56,8 @@ SnakeComponent.prototype.update = function(newSnake, clientSnake) {
       newSeg = new SnakeBodyHead(seg, this.size, dir.toTail, i)
 
     } else if ( i == newSnake.snake.length - 1){
-      newSeg = new SnakeBodyTail(seg, this.size, dir.toHead)
+      var stationary = oldCoord && MathUtil.posStr(oldCoord.position) == MathUtil.posStr(seg);
+      newSeg = new SnakeBodyTail(seg, this.size, dir.fromHead, stationary)
 
     } else if ( MathUtil.curved(dir) ){
       // debugger
@@ -79,16 +82,16 @@ SnakeComponent.prototype.resize = function (newSize) {
 
 SnakeComponent.prototype.draw = function(ctx, framePoint) {
 
-  this.bodySegments.forEach(function(seg){
-    seg.draw(ctx, framePoint);
-  });
+  this.bodySegments.forEach(function(seg, i){
+    this.bodySegments[this.bodySegments.length - (1 + i)].draw(ctx, framePoint);
+  }.bind(this));
 
   var app;
 
   Object.keys(this.digestingApples).forEach(function(id){
     app = this.digestingApples[id];
     if (app.completed) { delete this.digestingApples[id]; }
-    else { app.draw(ctx) };
+    else { app.draw(ctx, framePoint) };
 
 
   }.bind(this));

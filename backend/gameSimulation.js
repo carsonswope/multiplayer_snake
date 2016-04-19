@@ -67,12 +67,12 @@ exports.checkCurrentGameState = function(players, apples, frame) {
           _redisClient.hset('apples', MathUtil.randomPosStr(), true);
         }
 
-        if (allPositions[headStr].length > 1 || MathUtil.outOfBounds(head)) {
-          currentPlayer.action = 'DIE';
-          currentPlayer.snake = currentPlayer.snakeAtFrame(frame);
-          currentPlayer.dir = 'NONE';
-          currentPlayer.state = CONSTANTS.PLAYER_STATES.DEAD;
-        }
+        // if (allPositions[headStr].length > 1 || MathUtil.outOfBounds(head)) {
+        //   currentPlayer.action = 'DIE';
+        //   currentPlayer.snake = currentPlayer.snakeAtFrame(frame);
+        //   currentPlayer.dir = 'NONE';
+        //   currentPlayer.state = CONSTANTS.PLAYER_STATES.DEAD;
+        // }
       }
 
       _redisClient.hset('players', player, currentPlayer.json() );

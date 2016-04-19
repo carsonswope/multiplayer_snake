@@ -3,7 +3,8 @@ var CanvasHelper = require('../../../util/CanvasPos');
 var RenderableComponent = require('./RenderableComponent');
 
 function BoardSquare(originalPosition, screenSize) {
-  this.distance = 100;
+  this.distance = 1;
+  this.lastDistance = 1;
   RenderableComponent.call(this, originalPosition, screenSize);
 }
 
@@ -11,36 +12,28 @@ BoardSquare.inherits(RenderableComponent);
 
 BoardSquare.prototype.draw = function(ctx, timePoint) {
 
-  var time = timePoint ? timePoint: 1;
+  var time = timePoint ? timePoint : 1;
 
-  var color;
+  var distance;
 
-  var opacityTimePercentage = Math.sin(time * 2 * Math.PI) * 0.25 + 0.75;
+  if (!this.touchedLast) {
+    distance = 1;
+    this.distance = 1;
+  }
 
-  var xTween = (this.position[1] + 0.0) / (CONSTANTS.BOARD.WIDTH + 0.0)
-  //
-  // this.distance = Math.min(
-  //   Math.abs(xTween - timePoint),
-  //   this.distance
-  // );
+  if (this.lastDistance != this.distance) {
+    distance = this.lastDistance + (this.distance - this.lastDistance) * timePoint;
+  } else {
+    distance = this.distance;
+  }
 
-
-  //
-  // var newTimePoint = (timePoint - 0.5)
-  // if (newTimePoint > 0){
-  //   newTimePoint = newTimePoint * 2;
-  //   if (Math.abs(xTween - timePoint) < 0.2) {
-  //     this.distance = 0.1;
-  //   }
-  // }
-
-  if (this.distance === 100) {
+  if (distance === 1) {
     ctx.strokeStyle = 'rgba(200,200,200,0)'
     ctx.lineWidth = 0;
     return;
   } else {
-    ctx.strokeStyle = 'rgba(200,200,200,' + (1 - this.distance) + ')';
-    ctx.lineWidth = 2 - (2 * this.distance);
+    ctx.strokeStyle = 'rgba(200,200,200,' + (1 - distance) + ')';
+    ctx.lineWidth = 2 - (2 * distance);
   }
 
   var pad = 1;
