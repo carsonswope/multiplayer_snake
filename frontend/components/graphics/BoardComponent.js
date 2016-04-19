@@ -5,7 +5,7 @@ var BoardSquare = require('./BoardSquare');
 
 var Renderable = require('./RenderableComponent');
 
-var MAX_DIST = 12;
+var MAX_DIST = 8;
 
 function BoardComponent(size) {
   this.rows = CONSTANTS.BOARD.HEIGHT;

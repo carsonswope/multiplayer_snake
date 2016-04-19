@@ -111,7 +111,7 @@ Renderer.prototype.draw = function(time){
   }.bind(this));
 
   Object.keys(this.snakes).forEach(function(id){
-    this.snakes[id].draw(ctx);
+    this.snakes[id].draw(ctx, this.framePoint());
   }.bind(this));
 
   Object.keys(this.deadSnakes).forEach(function(id){

@@ -85,3 +85,65 @@ exports.outOfBounds = function(pos) {
   return pos[0] < 0 || pos[0] >= CONSTANTS.BOARD.HEIGHT ||
          pos[1] < 0 || pos[1] >= CONSTANTS.BOARD.WIDTH;
 }
+
+exports.getDir = function(beforeSegment, segment, afterSegment) {
+
+  var selfToParent;
+  var selfToChild;
+
+
+  if (beforeSegment) {
+    selfToParent = [
+      segment[0] - beforeSegment[0],
+      segment[1] - beforeSegment[1]
+    ];
+  }
+
+  if (afterSegment) {
+    selfToChild = [
+      afterSegment[0] - segment[0],
+      afterSegment[1] - segment[1]
+    ];
+  }
+
+  return {
+    fromHead: selfToParent,
+    toTail: selfToChild
+  };
+
+};
+
+exports.curved = function(dir) {
+  return (
+    dir.fromHead[0] != dir.toTail[0] ||
+    dir.fromHead[1] != dir.toTail[1]
+  );
+
+}
+
+exports.getCurveType = function(dir) {
+
+  var type, t1, t2;
+
+  if (dir.fromHead[1]){
+    t1 = dir.fromHead[1] == 1 ?
+      'Right' : 'Left';
+  } else {
+    t1 = dir.fromHead[0] == 1 ?
+      'bot' : 'top';
+  }
+
+  if (dir.toTail[1]){
+    t2 = dir.toTail[1] == 1 ?
+      'Left' : 'Right';
+  } else {
+    t2 = dir.toTail[0] == 1 ?
+      'top' : 'bot';
+  }
+
+  type = t1.length > t2.length ?
+    t2 + t1 : t1 + t2;
+
+  return type;
+
+}
