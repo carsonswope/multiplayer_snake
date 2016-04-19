@@ -1,11 +1,13 @@
 var CanvasHelper = require('../../../util/CanvasPos');
 var RenderableComponent = require('./RenderableComponent');
+var COLORS = require('../../../colors');
 
 var DIGESTION_TIME_PER_SEGMENT = 80;
 
 function DigestingApple(originalPosition, screenSize, snakeSegs) {
   this.snakeSegs = snakeSegs;
   this.timeEaten = new Date();
+  this.makePoints();
   this.completed = false;
 
   RenderableComponent.call(this, originalPosition, screenSize);
@@ -13,11 +15,31 @@ function DigestingApple(originalPosition, screenSize, snakeSegs) {
 
 DigestingApple.inherits(RenderableComponent);
 
+
+DigestingApple.prototype.makePoints = function() {
+
+  this.points = [];
+
+  var detail = 6;
+  var angle;
+
+  for (var i = 0; i <= detail; i++) {
+    angle = (i / detail) * Math.PI * 2;
+    this.points.push([
+      Math.sin(angle),
+      Math.cos(angle)
+    ]);
+  }
+
+};
+
 DigestingApple.prototype.els = function(framePoint) {
 
   return [{
-    points: [[-1,-1], [-1,1], [1,1], [1,-1]],
-    fill: 'red'
+    points: this.points,
+    fill: COLORS.APPLE_BODY_RGBA(1),
+    width: 4,
+    stroke: COLORS.APPLE_OUTLINE_RGBA(1)
   }];
 
 };
@@ -55,9 +77,8 @@ DigestingApple.prototype.draw = function(ctx, framePoint) {
       scrnPos1[1] + (dPos[1] * pctDiff)
     ]
 
-    this.scale = 0.8;
-
-    this.toScreen(ctx, framePoint)
+    this.scale = 1 - (normalizedTimeElapsed / this.snakeSegs.length);
+    this.toScreen(ctx, normalizedTimeElapsed / this.snakeSegs.length)
 
   } else if (normalizedTimeElapsed > this.snakeSegs.length + 1) {
 

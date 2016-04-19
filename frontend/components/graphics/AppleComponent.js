@@ -37,9 +37,9 @@ AppleComponent.prototype.els = function(timePoint) {
 
   return [{
     points: this.points,
-    fill: COLORS.APPLE_BODY,
+    fill: COLORS.APPLE_BODY_RGBA(1),
     width: 4,
-    stroke: COLORS.APPLE_OUTLINE
+    stroke: COLORS.APPLE_OUTLINE_RGBA(1)
   },{
     points: [[0, -0.6], [0.1, -0.8], [0.1, -1.1], [0,-1.4], [-0.1, -1.6]],
     width: 2,
