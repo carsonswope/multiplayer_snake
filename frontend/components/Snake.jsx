@@ -203,6 +203,8 @@ var Snake = React.createClass({
     var player, ownPlayer, head, headStr, snakeElementCount;
     var snakeAtDeath, snakeTailAtDeath, snakeTailStr;
 
+    currentGame.deathFrame = false;
+
     if (currentGame.players) {
       Object.keys(currentGame.players).forEach(function(id){
 
@@ -242,7 +244,10 @@ var Snake = React.createClass({
             delete currentGame.players[id];
 
 
-            if (id == GameStore.ownId()) { GameStore.slayPlayer(); }
+            if (id == GameStore.ownId()) {
+              currentGame.deathFrame = true;
+              GameStore.slayPlayer();
+            }
           }
 
         }

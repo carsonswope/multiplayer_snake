@@ -19,6 +19,8 @@ function Renderer(context, screenSize) {
   this.board = new BoardComponent(this.size);
   this.playerState;
 
+  this.currentTranslation = [0,0];
+
   requestAnimationFrame(this.tick.bind(this))
 
 };
@@ -49,6 +51,7 @@ Renderer.prototype.timePoint = function(interval){
 Renderer.prototype.giveCurrentFrame = function(frame) {
 
   this.playerState = frame.playerState;
+  this.deathFrame = frame.deathFrame;
 
   Object.keys(frame.players).forEach(function(id) {
     if (!id == GameStore.ownId() || !this.deadSnakes[id]){
@@ -106,6 +109,37 @@ Renderer.prototype.resize = function(newSize){
 
 };
 
+Renderer.prototype.checkForDeathFrame = function() {
+
+    if (this.deathFrame) {
+
+      this.ctx.translate(
+        -this.currentTranslation[0],
+        -this.currentTranslation[1]
+      );
+
+      var dX = 50 * Math.sin(this.framePoint() * Math.PI * 2);
+
+      this.ctx.translate(
+        dX,
+        dX * -0.5
+      );
+
+      this.currentTranslation[0] = dX;
+
+    } else if (this.currentTranslation[0] || this.currentTranslation[1]) {
+
+      this.ctx.translate(
+        -this.currentTranslation[0],
+        -this.currentTranslation[1]
+      );
+      this.currentTranslation = [0,0];
+
+
+    };
+
+}
+
 Renderer.prototype.draw = function(time){
 
   var ctx = this.ctx;
@@ -127,6 +161,7 @@ Renderer.prototype.draw = function(time){
     this.deadSnakes[id].draw(ctx, this.framePoint());
   }.bind(this));
 
+  this.checkForDeathFrame();
 
 };
 

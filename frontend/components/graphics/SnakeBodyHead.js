@@ -12,10 +12,6 @@ SnakeBodyHead.inherits(RenderableComponent);
 
 SnakeBodyHead.prototype.els = function (framePoint) {
 
-  if (framePoint > 1) {
-    debugger;
-  }
-
   var fillColor = this.ownPlayer ?
     COLORS.OWN_PLAYER_SNAKE_BODY : COLORS.OTHER_PLAYER_SNAKE_BODY;
   var strokeColor = this.ownPlayer ?
@@ -30,8 +26,7 @@ SnakeBodyHead.prototype.els = function (framePoint) {
 
     points = [[-1,-1], [-1,1], [1,1], [1,-1], [-1,-1]];
 
-    console.log(framePoint);
-    this.scale = Math.sin(framePoint * Math.PI * (3/4)) * Math.sqrt(2);
+    this.scale = Math.sin(framePoint * Math.PI * (3/5)) * Math.sqrt(2);
 
   } else if (this.stationary) {
 

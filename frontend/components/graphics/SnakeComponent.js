@@ -38,6 +38,7 @@ SnakeComponent.prototype.update = function(newSnake, clientSnake) {
 
   } else if (newSnake.action == 'DIE') {
 
+    console.log('died!');
 
 
   }
