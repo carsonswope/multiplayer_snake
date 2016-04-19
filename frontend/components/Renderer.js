@@ -122,7 +122,7 @@ Renderer.prototype.checkForDeathFrame = function() {
 
       this.ctx.translate(
         dX,
-        dX * -0.5
+        0
       );
 
       this.currentTranslation[0] = dX;
